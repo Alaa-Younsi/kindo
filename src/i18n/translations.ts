@@ -41,6 +41,15 @@ export const translations = {
     "categories.title": "Nos catégories",
     "categories.subtitle": "Tout ce qu'il faut pour chaque compagnon",
     "categories.viewAll": "Voir tout",
+    "categories.dogs": "Chiens",
+    "categories.cats": "Chats",
+    "categories.birds": "Oiseaux",
+    "categories.fish": "Poissons",
+
+    // CTA section
+    "cta.title": "Votre compagnon mérite le meilleur",
+    "cta.subtitle": "Des centaines de produits pour chiens, chats, oiseaux et poissons — livrés chez vous, payés à la réception.",
+    "cta.button": "Commander maintenant",
 
     // Featured products
     "featured.title": "Produits populaires",
@@ -247,6 +256,15 @@ export const translations = {
     "categories.title": "فئاتنا",
     "categories.subtitle": "كل ما يحتاجه كل رفيق أليف",
     "categories.viewAll": "عرض الكل",
+    "categories.dogs": "كلاب",
+    "categories.cats": "قطط",
+    "categories.birds": "طيور",
+    "categories.fish": "أسماك",
+
+    // CTA section
+    "cta.title": "رفيقك الأليف يستحق الأفضل",
+    "cta.subtitle": "مئات المنتجات للكلاب والقطط والطيور والأسماك — توصَل إلى بابك وتدفع عند الاستلام.",
+    "cta.button": "اطلب الآن",
 
     // Featured products
     "featured.title": "المنتجات الأكثر طلبًا",

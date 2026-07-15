@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Minus, Plus, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
+import { CatMascot } from "@/components/effects/mascots";
 import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatPrice } from "@/lib/format";
@@ -24,10 +25,12 @@ export function CartDrawer() {
     >
       {items.length === 0 ? (
         <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
-          <ShoppingBag className="h-12 w-12 text-line" />
-          <p className="font-bold text-ink">{t("cart.empty")}</p>
+          <span className="flex h-32 w-32 items-center justify-center rounded-full bg-blue/10">
+            <CatMascot className="h-24 w-24" />
+          </span>
+          <p className="font-extrabold text-ink">{t("cart.empty")}</p>
           <p className="text-sm text-muted">{t("cart.emptySubtitle")}</p>
-          <Button variant="outline" onClick={closeCart} className="mt-2">
+          <Button variant="brand" onClick={closeCart} className="mt-2 hover:-rotate-1">
             {t("cart.continue")}
           </Button>
         </div>
@@ -67,12 +70,12 @@ export function CartDrawer() {
                     </p>
                   )}
                   <div className="mt-auto flex items-center justify-between">
-                    <div className="flex items-center gap-2 rounded-full border-2 border-line px-1">
+                    <div className="flex items-center gap-2 rounded-full border-2 border-blue/40 bg-blue/5 px-1">
                       <button
                         onClick={() =>
                           updateQuantity(line.productId, line.color, line.size, line.quantity - 1)
                         }
-                        className="p-1 text-muted hover:text-brand"
+                        className="p-1 text-blue transition-transform hover:scale-125"
                         aria-label="-"
                       >
                         <Minus className="h-3.5 w-3.5" />
@@ -87,13 +90,13 @@ export function CartDrawer() {
                             Math.min(line.quantity + 1, line.stock || 99),
                           )
                         }
-                        className="p-1 text-muted hover:text-brand"
+                        className="p-1 text-blue transition-transform hover:scale-125"
                         aria-label="+"
                       >
                         <Plus className="h-3.5 w-3.5" />
                       </button>
                     </div>
-                    <span className="text-sm font-extrabold text-ink">
+                    <span className="text-sm font-extrabold text-brand">
                       {formatPrice(line.price * line.quantity)}
                     </span>
                   </div>

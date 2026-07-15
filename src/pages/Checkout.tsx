@@ -113,8 +113,11 @@ export default function Checkout() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-      <h1 className="font-display text-3xl font-extrabold text-ink">{t("checkout.title")}</h1>
+    <div className="bg-tint-green">
+      <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+      <h1 className="squiggle inline-block font-display text-3xl font-extrabold text-ink">
+        {t("checkout.title")}
+      </h1>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
@@ -203,24 +206,26 @@ export default function Checkout() {
             ))}
           </ul>
 
-          <div className="mt-4 rounded-2xl border-2 border-line bg-panel-2 p-4 text-sm">
-            <div className="flex justify-between">
-              <span className="text-muted">{t("checkout.subtotal")}</span>
-              <span className="font-bold">{formatPrice(subtotal)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-muted">{t("checkout.shipping")}</span>
-              <span className="font-bold">
-                {shipping === null
-                  ? t("checkout.shippingUnknown")
-                  : shipping === 0
-                    ? t("checkout.shippingFree")
-                    : formatPrice(shipping)}
-              </span>
-            </div>
-            <div className="mt-2 flex justify-between border-t-2 border-line pt-2 text-base">
-              <span className="font-extrabold">{t("checkout.total")}</span>
-              <span className="font-extrabold text-brand">{formatPrice(total)}</span>
+          <div className="mt-4 rounded-2xl bg-gradient-to-br from-green via-blue to-brand p-[3px] shadow-lg">
+            <div className="rounded-[calc(1rem-3px)] bg-panel p-4 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted">{t("checkout.subtotal")}</span>
+                <span className="font-bold">{formatPrice(subtotal)}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted">{t("checkout.shipping")}</span>
+                <span className="font-bold text-green">
+                  {shipping === null
+                    ? t("checkout.shippingUnknown")
+                    : shipping === 0
+                      ? t("checkout.shippingFree")
+                      : formatPrice(shipping)}
+                </span>
+              </div>
+              <div className="mt-2 flex justify-between border-t-2 border-line pt-2 text-base">
+                <span className="font-extrabold">{t("checkout.total")}</span>
+                <span className="font-extrabold text-brand">{formatPrice(total)}</span>
+              </div>
             </div>
           </div>
 
@@ -228,6 +233,7 @@ export default function Checkout() {
             {t("cart.continue")}
           </Link>
         </div>
+      </div>
       </div>
     </div>
   );

@@ -3,6 +3,7 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { ScrollProgress } from "@/components/effects/ScrollProgress";
 import { trackPageView } from "@/lib/pixel";
 
 // Storefront pages are the customer-facing critical path — kept eager for
@@ -54,6 +55,7 @@ function PixelPageView() {
 function StorefrontLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
+      <ScrollProgress />
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />

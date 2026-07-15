@@ -4,6 +4,7 @@ import { ImageOff, ShoppingBag } from "lucide-react";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/product/ProductCard";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
+import { Paw } from "@/components/effects/PawScatter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -107,34 +108,41 @@ export default function ProductPage() {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="bg-tint-blue">
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Gallery */}
         <div>
-          <div className="aspect-square overflow-hidden rounded-3xl border-2 border-line bg-panel-2">
-            {images[activeImage] ? (
-              <img
-                src={images[activeImage].url}
-                alt={images[activeImage].alt ?? localize(product, "name", lang)}
-                width={600}
-                height={600}
-                loading="eager"
-                fetchPriority="high"
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-line">
-                <ImageOff className="h-16 w-16" />
-              </div>
-            )}
+          <div className="relative">
+            <div
+              aria-hidden
+              className="absolute -inset-3 rotate-2 rounded-[2rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25"
+            />
+            <div className="relative aspect-square overflow-hidden rounded-3xl border-2 border-line bg-panel-2">
+              {images[activeImage] ? (
+                <img
+                  src={images[activeImage].url}
+                  alt={images[activeImage].alt ?? localize(product, "name", lang)}
+                  width={600}
+                  height={600}
+                  loading="eager"
+                  fetchPriority="high"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-line">
+                  <ImageOff className="h-16 w-16" />
+                </div>
+              )}
+            </div>
           </div>
           {images.length > 1 && (
-            <div className="mt-3 flex gap-2 overflow-x-auto">
+            <div className="mt-5 flex gap-2 overflow-x-auto">
               {images.map((img, i) => (
                 <button
                   key={img.id}
                   onClick={() => setActiveImage(i)}
-                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 ${i === activeImage ? "border-brand" : "border-line"}`}
+                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all hover:-translate-y-0.5 ${i === activeImage ? "border-brand ring-2 ring-brand/30" : "border-line"}`}
                 >
                   <img
                     src={img.url}
@@ -232,14 +240,17 @@ export default function ProductPage() {
           {!isOut && (
             <div className="mt-5 flex items-center gap-3">
               <p className="text-sm font-bold text-ink">{t("product.quantity")}</p>
-              <div className="flex items-center gap-3 rounded-full border-2 border-line px-3 py-1">
-                <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="text-lg font-bold">
+              <div className="flex items-center gap-3 rounded-full border-2 border-blue/40 bg-blue/5 px-3 py-1">
+                <button
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className="text-lg font-bold text-blue transition-transform hover:scale-125"
+                >
                   −
                 </button>
                 <span className="min-w-4 text-center font-bold">{quantity}</span>
                 <button
                   onClick={() => setQuantity((q) => Math.min(product.stock, q + 1))}
-                  className="text-lg font-bold"
+                  className="text-lg font-bold text-blue transition-transform hover:scale-125"
                 >
                   +
                 </button>
@@ -249,7 +260,7 @@ export default function ProductPage() {
 
           {!isOut && (
             <div className="mt-6 flex gap-3">
-              <Button variant="outline" size="lg" onClick={handleAddToCart} className="flex-1 gap-2">
+              <Button variant="blue" size="lg" onClick={handleAddToCart} className="fx-paw-sweep flex-1 gap-2 hover:-rotate-1">
                 <ShoppingBag className="h-4 w-4" />
                 {t("product.addToCart")}
               </Button>
@@ -257,22 +268,28 @@ export default function ProductPage() {
           )}
 
           {product.details_fr.length > 0 && (
-            <div className="mt-6">
-              <p className="mb-2 text-sm font-bold text-ink">{t("product.details")}</p>
-              <ul className="list-inside list-disc space-y-1 text-sm text-muted">
+            <div className="mt-6 rounded-2xl border-2 border-green/30 bg-green/5 p-4">
+              <p className="mb-2 text-sm font-extrabold text-green">{t("product.details")}</p>
+              <ul className="space-y-1.5 text-sm text-muted">
                 {(lang === "ar" ? product.details_ar : product.details_fr).map((d, i) => (
-                  <li key={i}>{d}</li>
+                  <li key={i} className="flex items-start gap-2">
+                    <Paw className="mt-0.5 h-3.5 w-3.5 shrink-0 text-green/60" />
+                    {d}
+                  </li>
                 ))}
               </ul>
             </div>
           )}
 
           {!isOut && (
-            <div className="mt-8 rounded-3xl border-2 border-brand/30 bg-brand/5 p-5">
-              <h2 className="mb-4 font-display text-lg font-extrabold text-ink">
-                {t("product.buyNow")}
-              </h2>
-              <InlineCheckout product={product} color={color} size={size} quantity={quantity} />
+            <div className="mt-8 rounded-3xl bg-gradient-to-br from-brand via-yellow to-blue p-[3px] shadow-xl">
+              <div className="rounded-[calc(1.5rem-3px)] bg-panel p-5">
+                <h2 className="mb-4 flex items-center gap-2 font-display text-lg font-extrabold text-ink">
+                  <Paw className="h-5 w-5 text-brand" />
+                  {t("product.buyNow")}
+                </h2>
+                <InlineCheckout product={product} color={color} size={size} quantity={quantity} />
+              </div>
             </div>
           )}
         </div>
@@ -280,14 +297,17 @@ export default function ProductPage() {
 
       {related && related.length > 0 && (
         <section className="mt-16">
-          <h2 className="mb-6 font-display text-xl font-extrabold text-ink">{t("product.related")}</h2>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          <h2 className="squiggle mb-6 inline-block font-display text-xl font-extrabold text-ink">
+            {t("product.related")}
+          </h2>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
             {related.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
         </section>
       )}
+      </div>
     </div>
   );
 }

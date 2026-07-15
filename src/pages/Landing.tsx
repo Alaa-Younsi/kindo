@@ -1,34 +1,60 @@
+import { useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { BadgeCheck, ShieldCheck, Star, Truck } from "lucide-react";
-import { HeroPets } from "@/components/effects/HeroPets";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
+import {
+  BadgeCheck,
+  Bone,
+  PawPrint,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  Truck,
+} from "lucide-react";
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
-import { BentoPanel } from "@/components/ui/BentoPanel";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { TiltCard } from "@/components/effects/TiltCard";
+import { PawScatter, Paw } from "@/components/effects/PawScatter";
+import { WaveDivider } from "@/components/effects/WaveDivider";
+import { Marquee } from "@/components/effects/Marquee";
+import { BirdMascot, CatMascot, DogMascot, FishMascot } from "@/components/effects/mascots";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { useFeaturedProducts } from "@/hooks/useProducts";
+import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { localize } from "@/lib/format";
 import { supabase } from "@/lib/supabase";
-import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 import type { ClientReview } from "@/types/db";
 
-const CATEGORY_ACCENTS = ["brand", "blue", "green", "yellow"] as const;
-
-const ACCENT_SOLID_CLASSES: Record<(typeof CATEGORY_ACCENTS)[number], string> = {
-  brand: "bg-brand text-brand-ink",
-  blue: "bg-blue text-blue-ink",
-  green: "bg-green text-green-ink",
-  yellow: "bg-yellow text-yellow-ink",
+/* Square crops cut from the client's brand photo (see scripts note in README). */
+const CATEGORY_PHOTOS: Record<string, string> = {
+  chiens: "/images/cat-chiens.webp",
+  chats: "/images/cat-chats.webp",
+  oiseaux: "/images/cat-oiseaux.webp",
+  poissons: "/images/cat-poissons.webp",
 };
 
-const ACCENT_SOFT_CLASSES: Record<(typeof CATEGORY_ACCENTS)[number], string> = {
-  brand: "bg-brand/15",
-  blue: "bg-blue/15",
-  green: "bg-green/15",
-  yellow: "bg-yellow/15",
+const CATEGORY_ICONS: Record<string, typeof Bone> = {
+  "alimentation-soins": Bone,
+  accessoires: Sparkles,
 };
+
+const RING_TONES = [
+  "ring-brand/50 group-hover:ring-brand",
+  "ring-blue/50 group-hover:ring-blue",
+  "ring-green/50 group-hover:ring-green",
+  "ring-yellow/60 group-hover:ring-yellow",
+] as const;
+
+const BLOB_TONES = [
+  "bg-brand/15 text-brand",
+  "bg-blue/15 text-blue",
+  "bg-green/15 text-green",
+  "bg-yellow/25 text-yellow-ink",
+] as const;
 
 function useActiveReviews() {
   return useQuery({
@@ -47,11 +73,28 @@ function useActiveReviews() {
   });
 }
 
+const cardStagger = {
+  hidden: { y: 32 },
+  show: (i: number) => ({
+    y: 0,
+    transition: { duration: 0.45, delay: i * 0.08, ease: "easeOut" as const },
+  }),
+};
+
 export default function Landing() {
   const { t, lang } = useLanguage();
   const { data: categories } = useCategories();
   const { data: featured } = useFeaturedProducts(8);
   const { data: reviews } = useActiveReviews();
+  const { shouldReduceEffects } = useMediaFlags();
+
+  const heroRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ["start start", "end start"],
+  });
+  const photoY = useTransform(scrollYProgress, [0, 1], [0, 60]);
+  const blobY = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
   useSeo({
     title: t("brand.name"),
@@ -68,175 +111,374 @@ export default function Landing() {
   });
 
   return (
-    <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-panel-2">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-14 sm:px-6 md:grid-cols-2 md:py-20 lg:px-8">
-          <div>
+    <div className="overflow-x-clip">
+      {/* ================= Hero ================= */}
+      <section ref={heroRef} className="bg-mesh-hero relative overflow-hidden">
+        <PawScatter />
+        <motion.div
+          aria-hidden
+          style={shouldReduceEffects ? undefined : { y: blobY }}
+          className="pointer-events-none absolute -end-24 -top-24 h-80 w-80 rounded-full bg-blue/15"
+        />
+        <motion.div
+          aria-hidden
+          style={shouldReduceEffects ? undefined : { y: blobY }}
+          className="pointer-events-none absolute -bottom-32 -start-20 h-72 w-72 rounded-full bg-yellow/20"
+        />
+
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-2 md:pb-24 md:pt-16 lg:px-8">
+          <div className="relative z-10">
             <motion.span
-              initial={{ x: -12 }}
+              initial={{ x: -16 }}
               animate={{ x: 0 }}
               transition={{ duration: 0.4 }}
-              className="inline-flex items-center gap-1.5 rounded-full bg-green/15 px-3 py-1.5 text-xs font-bold text-green"
+              className="inline-flex items-center gap-2 rounded-full border-2 border-green/40 bg-green/10 px-4 py-1.5 text-xs font-extrabold uppercase tracking-wide text-green"
             >
-              <Truck className="h-3.5 w-3.5" />
+              <Truck className="h-4 w-4" />
               {t("hero.badge")}
             </motion.span>
-            <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight text-ink sm:text-5xl">
-              {t("hero.title")}
+
+            <h1 className="mt-5 font-display text-4xl font-extrabold leading-[1.12] sm:text-5xl lg:text-6xl">
+              <span className="bg-gradient-to-r from-brand via-blue to-green bg-clip-text text-transparent">
+                {t("hero.title")}
+              </span>
             </h1>
-            <p className="mt-4 max-w-md text-base text-muted sm:text-lg">{t("hero.subtitle")}</p>
-            <div className="mt-8 flex flex-wrap gap-3">
+            <p className="mt-5 max-w-md text-base text-muted sm:text-lg">{t("hero.subtitle")}</p>
+
+            <div className="mt-8 flex flex-wrap items-center gap-3">
               <Link to="/shop">
-                <Button variant="brand" size="lg">
+                <Button variant="brand" size="lg" className="fx-paw-sweep hover:-rotate-1">
+                  <PawPrint className="h-5 w-5" />
                   {t("hero.cta.shop")}
                 </Button>
               </Link>
               <a href="#categories">
-                <Button variant="outline" size="lg">
+                <Button variant="blue" size="lg" className="hover:rotate-1">
                   {t("hero.cta.categories")}
                 </Button>
               </a>
             </div>
-          </div>
-          <HeroPets />
-        </div>
-      </section>
 
-      {/* Trust badges */}
-      <section className="border-y-2 border-line bg-panel">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-8 sm:px-6 md:grid-cols-4 lg:px-8">
-          {(
-            [
-              { Icon: Truck, key: "trust.cod", accent: "text-brand" },
-              { Icon: BadgeCheck, key: "trust.delivery", accent: "text-blue" },
-              { Icon: ShieldCheck, key: "trust.quality", accent: "text-green" },
-              { Icon: Star, key: "trust.support", accent: "text-yellow" },
-            ] as const
-          ).map(({ Icon, key, accent }) => (
-            <div key={key} className="flex items-center gap-3">
-              <Icon className={`h-8 w-8 shrink-0 ${accent}`} strokeWidth={2} />
-              <span className="text-sm font-bold text-ink">{t(key)}</span>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Categories */}
-      <section id="categories" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-end justify-between">
-          <div>
-            <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">
-              {t("categories.title")}
-            </h2>
-            <p className="mt-1 text-muted">{t("categories.subtitle")}</p>
-          </div>
-          <Link to="/shop" className="hidden text-sm font-bold text-brand hover:underline sm:block">
-            {t("categories.viewAll")}
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
-          {categories?.map((cat, i) => (
-            <Link key={cat.id} to={`/shop?category=${cat.slug}`}>
-              <BentoPanel
-                accent={CATEGORY_ACCENTS[i % CATEGORY_ACCENTS.length]}
-                className="flex aspect-square flex-col items-center justify-center gap-2 text-center hover:-translate-y-1"
-              >
-                {cat.image_url ? (
-                  <img
-                    src={cat.image_url}
-                    alt={localize(cat, "name", lang)}
-                    width={64}
-                    height={64}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-14 w-14 rounded-2xl object-cover"
-                  />
-                ) : (
-                  <div
-                    className={`flex h-14 w-14 items-center justify-center rounded-2xl text-2xl font-extrabold text-ink ${ACCENT_SOFT_CLASSES[CATEGORY_ACCENTS[i % CATEGORY_ACCENTS.length]]}`}
-                  >
-                    {localize(cat, "name", lang).charAt(0)}
-                  </div>
-                )}
-                <span className="text-sm font-bold text-ink">{localize(cat, "name", lang)}</span>
-              </BentoPanel>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Featured products */}
-      {featured && featured.length > 0 && (
-        <section className="bg-panel-2 py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-8">
-              <h2 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">
-                {t("featured.title")}
-              </h2>
-              <p className="mt-1 text-muted">{t("featured.subtitle")}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-              {featured.map((product) => (
-                <ProductCard key={product.id} product={product} />
+            {/* animal chips */}
+            <div className="mt-10 flex gap-3">
+              {(
+                [
+                  { M: DogMascot, bg: "bg-brand/10 border-brand/30" },
+                  { M: CatMascot, bg: "bg-blue/10 border-blue/30" },
+                  { M: BirdMascot, bg: "bg-yellow/20 border-yellow/50" },
+                  { M: FishMascot, bg: "bg-green/10 border-green/30" },
+                ] as const
+              ).map(({ M, bg }, i) => (
+                <motion.span
+                  key={i}
+                  initial={{ y: 20 }}
+                  animate={{ y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.1, type: "spring", stiffness: 220 }}
+                  className={cn(
+                    "flex h-14 w-14 items-center justify-center rounded-2xl border-2 transition-transform hover:-translate-y-1 hover:rotate-6 sm:h-16 sm:w-16",
+                    bg,
+                  )}
+                >
+                  <M className="h-10 w-10 sm:h-12 sm:w-12" />
+                </motion.span>
               ))}
             </div>
           </div>
-        </section>
-      )}
 
-      {/* How it works */}
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-        <h2 className="mb-10 text-center font-display text-2xl font-extrabold text-ink sm:text-3xl">
-          {t("how.title")}
-        </h2>
-        <div className="grid gap-6 md:grid-cols-3">
-          {(["step1", "step2", "step3"] as const).map((step, i) => (
-            <BentoPanel
-              key={step}
-              accent={CATEGORY_ACCENTS[i]}
-              className="flex flex-col items-center gap-3 text-center"
-            >
-              <span
-                className={`flex h-12 w-12 items-center justify-center rounded-full text-lg font-extrabold ${ACCENT_SOLID_CLASSES[CATEGORY_ACCENTS[i]]}`}
-              >
-                {i + 1}
-              </span>
-              <h3 className="font-display text-lg font-extrabold text-ink">
-                {t(`how.${step}.title`)}
-              </h3>
-              <p className="text-sm text-muted">{t(`how.${step}.desc`)}</p>
-            </BentoPanel>
-          ))}
+          {/* Photo card with mascots peeking around it */}
+          <motion.div
+            style={shouldReduceEffects ? undefined : { y: photoY }}
+            className="relative mx-auto w-full max-w-lg"
+          >
+            <div aria-hidden className="absolute -inset-6 rotate-3 rounded-[2.5rem] bg-gradient-to-br from-blue/30 via-yellow/30 to-brand/30" />
+            <TiltCard max={7} className="relative">
+              <div className="rotate-[-2deg] overflow-hidden rounded-[2rem] border-8 border-panel bg-white shadow-2xl transition-transform duration-300 hover:rotate-0">
+                <img
+                  src="/images/hero-pets.webp"
+                  alt={t("hero.title")}
+                  width={1600}
+                  height={893}
+                  loading="eager"
+                  fetchPriority="high"
+                  className="h-auto w-full"
+                />
+              </div>
+            </TiltCard>
+            <DogMascot className="absolute -bottom-10 -start-6 h-24 w-24 drop-shadow-lg sm:h-28 sm:w-28" />
+            <BirdMascot className="anim-float absolute -end-4 -top-10 h-20 w-20 drop-shadow-lg sm:h-24 sm:w-24" />
+            <FishMascot className="anim-bounce-soft absolute -bottom-8 end-10 h-16 w-16 drop-shadow-lg sm:h-20 sm:w-20" />
+          </motion.div>
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* ================= Marquee ================= */}
+      <Marquee />
+
+      {/* ================= Trust badges ================= */}
+      <section className="relative bg-tint-blue">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
+          {(
+            [
+              { Icon: Truck, key: "trust.cod", card: "bg-brand text-brand-ink" },
+              { Icon: BadgeCheck, key: "trust.delivery", card: "bg-blue text-blue-ink" },
+              { Icon: ShieldCheck, key: "trust.quality", card: "bg-green text-green-ink" },
+              { Icon: Star, key: "trust.support", card: "bg-yellow text-yellow-ink" },
+            ] as const
+          ).map(({ Icon, key, card }, i) => (
+            <motion.div
+              key={key}
+              custom={i}
+              variants={cardStagger}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, margin: "-40px" }}
+              className={cn(
+                "group flex items-center gap-3 rounded-2xl px-5 py-5 shadow-[0_6px_0_0_rgb(var(--c-ink)/0.12)] transition-transform hover:-translate-y-1 hover:rotate-1",
+                card,
+              )}
+            >
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 transition-transform group-hover:rotate-12">
+                <Icon className="h-6 w-6" strokeWidth={2.2} />
+              </span>
+              <span className="text-sm font-extrabold leading-tight">{t(key)}</span>
+            </motion.div>
+          ))}
+        </div>
+        <WaveDivider className="text-panel-2" />
+      </section>
+
+      {/* ================= Categories ================= */}
+      <section id="categories" className="bg-tint-yellow relative">
+        <PawScatter count={4} />
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <SectionHeading
+            tone="blue"
+            kicker={t("nav.categories")}
+            title={t("categories.title")}
+            subtitle={t("categories.subtitle")}
+          />
+          <div className="mt-10 grid grid-cols-2 gap-4 sm:gap-5 md:grid-cols-3 lg:grid-cols-6">
+            {categories?.map((cat, i) => {
+              const photo = cat.image_url ?? CATEGORY_PHOTOS[cat.slug];
+              const FallbackIcon = CATEGORY_ICONS[cat.slug] ?? PawPrint;
+              return (
+                <motion.div
+                  key={cat.id}
+                  custom={i}
+                  variants={cardStagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-40px" }}
+                >
+                  <Link to={`/shop?category=${cat.slug}`} className="group block">
+                    <TiltCard max={12}>
+                      <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-line bg-panel p-5 shadow-sm transition-all duration-200 group-hover:-translate-y-1.5 group-hover:border-transparent group-hover:shadow-xl">
+                        {photo ? (
+                          <span
+                            className={cn(
+                              "h-20 w-20 overflow-hidden rounded-full ring-4 transition-all sm:h-24 sm:w-24",
+                              RING_TONES[i % RING_TONES.length],
+                            )}
+                          >
+                            <img
+                              src={photo}
+                              alt={localize(cat, "name", lang)}
+                              width={96}
+                              height={96}
+                              loading="lazy"
+                              decoding="async"
+                              className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                            />
+                          </span>
+                        ) : (
+                          <span
+                            className={cn(
+                              "flex h-20 w-20 items-center justify-center rounded-full transition-transform group-hover:rotate-12 sm:h-24 sm:w-24",
+                              BLOB_TONES[i % BLOB_TONES.length],
+                            )}
+                          >
+                            <FallbackIcon className="h-9 w-9" strokeWidth={2} />
+                          </span>
+                        )}
+                        <span className="text-center text-sm font-extrabold text-ink">
+                          {localize(cat, "name", lang)}
+                        </span>
+                      </div>
+                    </TiltCard>
+                  </Link>
+                </motion.div>
+              );
+            })}
+          </div>
+        </div>
+        <WaveDivider className="text-bg" />
+      </section>
+
+      {/* ================= Featured products ================= */}
+      {featured && featured.length > 0 && (
+        <section className="bg-tint-green relative">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <SectionHeading
+              tone="green"
+              kicker={<Paw className="inline h-3.5 w-3.5" />}
+              title={t("featured.title")}
+              subtitle={t("featured.subtitle")}
+            />
+            <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
+              {featured.map((product, i) => (
+                <motion.div
+                  key={product.id}
+                  custom={i}
+                  variants={cardStagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-40px" }}
+                >
+                  <ProductCard product={product} />
+                </motion.div>
+              ))}
+            </div>
+            <div className="mt-8 text-center">
+              <Link to="/shop">
+                <Button variant="green" className="hover:rotate-1">
+                  {t("categories.viewAll")}
+                </Button>
+              </Link>
+            </div>
+          </div>
+          <WaveDivider className="text-panel-2" />
+        </section>
+      )}
+
+      {/* ================= How it works ================= */}
+      <section className="bg-tint-red relative">
+        <PawScatter count={4} />
+        <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <SectionHeading tone="brand" kicker="1 · 2 · 3" title={t("how.title")} />
+
+          <div className="relative mt-12 grid gap-10 md:grid-cols-3 md:gap-6">
+            {/* dashed paw trail connecting the steps (desktop only) */}
+            <div aria-hidden className="absolute inset-x-[16%] top-10 hidden items-center justify-around border-t-4 border-dashed border-line md:flex">
+              {[0, 1, 2, 3].map((i) => (
+                <motion.span
+                  key={i}
+                  initial={{ scale: 0.4, rotate: -20 }}
+                  whileInView={{ scale: 1, rotate: 90 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 + i * 0.15, type: "spring", stiffness: 260 }}
+                  className="-mt-3"
+                >
+                  <Paw className="h-6 w-6 text-brand/50" />
+                </motion.span>
+              ))}
+            </div>
+
+            {(
+              [
+                { M: DogMascot, step: "step1", chip: "bg-brand text-brand-ink", card: "border-brand/30 hover:border-brand bg-brand/5" },
+                { M: CatMascot, step: "step2", chip: "bg-blue text-blue-ink", card: "border-blue/30 hover:border-blue bg-blue/5" },
+                { M: FishMascot, step: "step3", chip: "bg-green text-green-ink", card: "border-green/30 hover:border-green bg-green/5" },
+              ] as const
+            ).map(({ M, step, chip, card }, i) => (
+              <motion.div
+                key={step}
+                custom={i}
+                variants={cardStagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-40px" }}
+                className={cn(
+                  "relative flex flex-col items-center gap-3 rounded-3xl border-2 p-7 pt-14 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl",
+                  card,
+                )}
+              >
+                <M className="absolute -top-12 h-24 w-24 drop-shadow-md" />
+                <span
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold shadow-[0_4px_0_0_rgb(var(--c-ink)/0.15)]",
+                    chip,
+                  )}
+                >
+                  {i + 1}
+                </span>
+                <h3 className="font-display text-lg font-extrabold text-ink">{t(`how.${step}.title`)}</h3>
+                <p className="text-sm text-muted">{t(`how.${step}.desc`)}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+        <WaveDivider className="text-bg" />
+      </section>
+
+      {/* ================= Testimonials ================= */}
       {reviews && reviews.length > 0 && (
-        <section className="bg-panel-2 py-16">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <h2 className="mb-8 text-center font-display text-2xl font-extrabold text-ink sm:text-3xl">
-              {t("testimonials.title")}
-            </h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {reviews.map((review) => (
-                <BentoPanel key={review.id} className="flex flex-col gap-3">
-                  <div className="flex gap-0.5">
-                    {Array.from({ length: 5 }).map((_, i) => (
+        <section className="bg-tint-blue relative">
+          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+            <SectionHeading tone="yellow" kicker="★★★★★" title={t("testimonials.title")} />
+            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {reviews.map((review, i) => (
+                <motion.div
+                  key={review.id}
+                  custom={i}
+                  variants={cardStagger}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, margin: "-40px" }}
+                  className={cn(
+                    "relative flex flex-col gap-3 rounded-3xl border-2 border-line bg-panel p-6 shadow-md transition-transform hover:rotate-0 hover:shadow-xl",
+                    i % 3 === 0 ? "rotate-[-1.5deg]" : i % 3 === 1 ? "rotate-[1deg]" : "rotate-[-0.5deg]",
+                  )}
+                >
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "absolute -top-3 start-8 h-6 w-16 rotate-[-4deg] rounded-sm opacity-80",
+                      i % 4 === 0 ? "bg-yellow" : i % 4 === 1 ? "bg-blue" : i % 4 === 2 ? "bg-green" : "bg-brand",
+                    )}
+                  />
+                  <div className="flex gap-1">
+                    {Array.from({ length: 5 }).map((_, s) => (
                       <Star
-                        key={i}
-                        className={`h-4 w-4 ${i < review.stars ? "fill-yellow text-yellow" : "text-line"}`}
+                        key={s}
+                        className={cn(
+                          "h-4 w-4",
+                          s < review.stars ? "fill-yellow text-yellow" : "text-line",
+                        )}
                       />
                     ))}
                   </div>
-                  <p className="text-sm text-ink">{review.review_text}</p>
-                  <span className="mt-auto text-sm font-bold text-muted">{review.client_name}</span>
-                </BentoPanel>
+                  <p className="text-sm leading-relaxed text-ink">{review.review_text}</p>
+                  <span className="mt-auto flex items-center gap-2 text-sm font-extrabold text-muted">
+                    <Paw className="h-4 w-4 text-brand/60" />
+                    {review.client_name}
+                  </span>
+                </motion.div>
               ))}
             </div>
           </div>
         </section>
       )}
+
+      {/* ================= CTA ================= */}
+      <section className="px-4 pb-20 pt-6 sm:px-6 lg:px-8">
+        <div className="bg-cta-gradient relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] px-6 py-14 text-center shadow-2xl sm:px-12 sm:py-16">
+          <PawScatter count={6} className="text-white" />
+          <BirdMascot className="anim-float absolute -start-4 top-6 hidden h-28 w-28 opacity-90 lg:block" />
+          <DogMascot className="anim-bounce-soft absolute -end-4 bottom-4 hidden h-32 w-32 opacity-90 lg:block" />
+          <div className="relative">
+            <h2 className="font-display text-3xl font-extrabold text-white drop-shadow sm:text-4xl">
+              {t("cta.title")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-xl text-white/85">{t("cta.subtitle")}</p>
+            <Link to="/shop" className="mt-8 inline-block">
+              <Button variant="yellow" size="lg" className="fx-paw-sweep hover:-rotate-1">
+                <PawPrint className="h-5 w-5" />
+                {t("cta.button")}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

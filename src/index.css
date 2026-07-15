@@ -144,3 +144,163 @@ input[type="number"]::-webkit-inner-spin-button {
 .fx-paw-sweep:hover::after {
   transform: translateX(120%);
 }
+
+/* ---------------------------------------------------------------------------
+   KINDO playful animation keyframes.
+   All decorative motion is transform-only: worst case under CPU pressure is
+   "slightly offset", never "invisible" (see the animation-safety rule).
+--------------------------------------------------------------------------- */
+@keyframes kf-float {
+  0%, 100% { transform: translateY(0) rotate(var(--float-tilt, 0deg)); }
+  50% { transform: translateY(-12px) rotate(var(--float-tilt, 0deg)); }
+}
+@keyframes kf-wiggle {
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(4deg); }
+}
+@keyframes kf-tailwag {
+  0%, 100% { transform: rotate(-14deg); }
+  50% { transform: rotate(14deg); }
+}
+@keyframes kf-flap {
+  0%, 100% { transform: rotate(0deg) scaleY(1); }
+  50% { transform: rotate(-16deg) scaleY(0.88); }
+}
+@keyframes kf-blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(0.08); }
+}
+@keyframes kf-swim {
+  0%, 100% { transform: translateX(0) rotate(-2deg); }
+  50% { transform: translateX(8px) rotate(3deg); }
+}
+@keyframes kf-bubble {
+  0% { transform: translateY(0) scale(0.6); opacity: 0.9; }
+  100% { transform: translateY(-26px) scale(1.1); opacity: 0; }
+}
+@keyframes kf-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes kf-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes kf-bounce-soft {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes kf-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+@keyframes kf-pop {
+  0% { transform: scale(0.4) rotate(-12deg); }
+  70% { transform: scale(1.12) rotate(4deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.anim-float { animation: kf-float 5s ease-in-out infinite; }
+.anim-wiggle { animation: kf-wiggle 2.4s ease-in-out infinite; }
+.anim-bounce-soft { animation: kf-bounce-soft 2.8s ease-in-out infinite; }
+.anim-spin-slow { animation: kf-spin-slow 26s linear infinite; }
+.hover-wiggle:hover { animation: kf-wiggle 0.5s ease-in-out; }
+
+/* ---------------------------------------------------------------------------
+   Colorful section backgrounds — radial gradient meshes built from the brand
+   RGB triplets so they tint correctly over both light and dark bases.
+--------------------------------------------------------------------------- */
+.bg-mesh-hero {
+  background:
+    radial-gradient(52% 66% at 82% 18%, rgb(var(--c-blue) / 0.16), transparent 70%),
+    radial-gradient(46% 60% at 12% 82%, rgb(var(--c-yellow) / 0.22), transparent 70%),
+    radial-gradient(40% 52% at 22% 12%, rgb(var(--c-brand) / 0.14), transparent 70%),
+    radial-gradient(36% 48% at 88% 88%, rgb(var(--c-green) / 0.16), transparent 70%),
+    rgb(var(--c-panel-2));
+}
+.bg-tint-blue {
+  background:
+    radial-gradient(58% 70% at 8% 6%, rgb(var(--c-blue) / 0.13), transparent 65%),
+    radial-gradient(42% 55% at 94% 90%, rgb(var(--c-green) / 0.10), transparent 65%),
+    rgb(var(--c-bg));
+}
+.bg-tint-yellow {
+  background:
+    radial-gradient(56% 72% at 92% 8%, rgb(var(--c-yellow) / 0.18), transparent 65%),
+    radial-gradient(44% 58% at 6% 92%, rgb(var(--c-brand) / 0.10), transparent 65%),
+    rgb(var(--c-panel-2));
+}
+.bg-tint-green {
+  background:
+    radial-gradient(54% 68% at 10% 90%, rgb(var(--c-green) / 0.14), transparent 65%),
+    radial-gradient(40% 55% at 90% 10%, rgb(var(--c-blue) / 0.10), transparent 65%),
+    rgb(var(--c-bg));
+}
+.bg-tint-red {
+  background:
+    radial-gradient(56% 70% at 88% 90%, rgb(var(--c-brand) / 0.12), transparent 65%),
+    radial-gradient(42% 56% at 10% 8%, rgb(var(--c-yellow) / 0.14), transparent 65%),
+    rgb(var(--c-panel-2));
+}
+.bg-tint-footer {
+  background:
+    radial-gradient(50% 85% at 90% 8%, rgb(var(--c-blue) / 0.10), transparent 65%),
+    radial-gradient(45% 75% at 8% 92%, rgb(var(--c-brand) / 0.08), transparent 65%),
+    radial-gradient(35% 60% at 50% 100%, rgb(var(--c-yellow) / 0.08), transparent 65%),
+    rgb(var(--c-panel-2));
+}
+.bg-cta-gradient {
+  background:
+    radial-gradient(70% 120% at 15% 0%, rgb(var(--c-yellow) / 0.35), transparent 60%),
+    radial-gradient(70% 120% at 90% 100%, rgb(var(--c-green) / 0.45), transparent 65%),
+    linear-gradient(115deg, rgb(var(--c-blue)), rgb(var(--c-blue)) 40%, rgb(var(--c-green)));
+}
+
+/* Scattered paw-print pattern (inline SVG, currentColor-independent). */
+.bg-paws {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23808080' fill-opacity='0.07'%3E%3Cg transform='translate(28 30) rotate(-18)'%3E%3Cellipse cx='0' cy='8' rx='9' ry='7.5'/%3E%3Cellipse cx='-10' cy='-4' rx='4' ry='5.4'/%3E%3Cellipse cx='-3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='10' cy='-4' rx='4' ry='5.4'/%3E%3C/g%3E%3Cg transform='translate(112 108) rotate(22)'%3E%3Cellipse cx='0' cy='8' rx='9' ry='7.5'/%3E%3Cellipse cx='-10' cy='-4' rx='4' ry='5.4'/%3E%3Cellipse cx='-3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='10' cy='-4' rx='4' ry='5.4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* Squiggle underline for section headings. */
+.squiggle {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='10' viewBox='0 0 120 10'%3E%3Cpath d='M2 7 Q 12 1 22 6 T 42 6 T 62 6 T 82 6 T 102 6 T 118 5' fill='none' stroke='%23E8342A' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center bottom;
+  background-size: 120px 10px;
+  padding-bottom: 12px;
+}
+
+/* Marquee band (always LTR internally — decorative direction). */
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: kf-marquee 26s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+/* Skeleton shimmer for loading cards. */
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    rgb(var(--c-panel-2)) 40%,
+    rgb(var(--c-line) / 0.6) 50%,
+    rgb(var(--c-panel-2)) 60%
+  );
+  background-size: 200% 100%;
+  animation: kf-shimmer 1.6s linear infinite;
+}
+
+/* Gradient scrollbar in brand colors. */
+::-webkit-scrollbar { width: 12px; }
+::-webkit-scrollbar-track { background: rgb(var(--c-panel-2)); }
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--c-brand)),
+    rgb(var(--c-yellow)),
+    rgb(var(--c-green)),
+    rgb(var(--c-blue))
+  );
+  border-radius: 8px;
+  border: 3px solid rgb(var(--c-panel-2));
+}
