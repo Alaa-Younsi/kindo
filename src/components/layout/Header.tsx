@@ -105,7 +105,7 @@ export function Header() {
           </div>
         </form>
 
-        <div className={cn("flex items-center gap-1.5", "md:ms-2")}>
+        <div className={cn("ms-auto flex items-center gap-1.5", "md:ms-2")}>
           <button
             onClick={() => setLang(lang === "fr" ? "ar" : "fr")}
             className="rounded-full border-2 border-green/40 bg-green/10 px-2.5 py-1 text-xs font-extrabold text-green transition-all hover:-rotate-3 hover:bg-green hover:text-green-ink"
