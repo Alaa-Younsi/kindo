@@ -1,0 +1,127 @@
+import { Link } from "react-router-dom";
+import { Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { Drawer } from "@/components/ui/Drawer";
+import { Button } from "@/components/ui/Button";
+import { useCartStore } from "@/store/cart";
+import { useLanguage } from "@/i18n/LanguageProvider";
+import { formatPrice } from "@/lib/format";
+
+export function CartDrawer() {
+  const { t, lang, dir } = useLanguage();
+  const isOpen = useCartStore((s) => s.isOpen);
+  const closeCart = useCartStore((s) => s.closeCart);
+  const items = useCartStore((s) => s.items);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const removeItem = useCartStore((s) => s.removeItem);
+  const subtotal = useCartStore((s) => s.subtotal());
+
+  return (
+    <Drawer
+      open={isOpen}
+      onClose={closeCart}
+      side={dir === "rtl" ? "left" : "right"}
+      title={t("cart.title")}
+    >
+      {items.length === 0 ? (
+        <div className="flex h-full flex-col items-center justify-center gap-3 px-6 text-center">
+          <ShoppingBag className="h-12 w-12 text-line" />
+          <p className="font-bold text-ink">{t("cart.empty")}</p>
+          <p className="text-sm text-muted">{t("cart.emptySubtitle")}</p>
+          <Button variant="outline" onClick={closeCart} className="mt-2">
+            {t("cart.continue")}
+          </Button>
+        </div>
+      ) : (
+        <div className="flex h-full flex-col">
+          <ul className="flex-1 divide-y-2 divide-line overflow-y-auto px-5">
+            {items.map((line) => (
+              <li key={`${line.productId}-${line.color}-${line.size}`} className="flex gap-3 py-4">
+                <Link
+                  to={`/product/${line.slug}`}
+                  onClick={closeCart}
+                  className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-panel-2"
+                >
+                  {line.image && (
+                    <img
+                      src={line.image}
+                      alt={lang === "ar" ? line.name_ar : line.name_fr}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      decoding="async"
+                      className="h-full w-full object-cover"
+                    />
+                  )}
+                </Link>
+                <div className="flex flex-1 flex-col">
+                  <Link
+                    to={`/product/${line.slug}`}
+                    onClick={closeCart}
+                    className="text-sm font-bold text-ink hover:text-brand"
+                  >
+                    {lang === "ar" ? line.name_ar : line.name_fr}
+                  </Link>
+                  {(line.color || line.size) && (
+                    <p className="text-xs text-muted">
+                      {[line.color, line.size].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
+                  <div className="mt-auto flex items-center justify-between">
+                    <div className="flex items-center gap-2 rounded-full border-2 border-line px-1">
+                      <button
+                        onClick={() =>
+                          updateQuantity(line.productId, line.color, line.size, line.quantity - 1)
+                        }
+                        className="p-1 text-muted hover:text-brand"
+                        aria-label="-"
+                      >
+                        <Minus className="h-3.5 w-3.5" />
+                      </button>
+                      <span className="min-w-4 text-center text-sm font-bold">{line.quantity}</span>
+                      <button
+                        onClick={() =>
+                          updateQuantity(
+                            line.productId,
+                            line.color,
+                            line.size,
+                            Math.min(line.quantity + 1, line.stock || 99),
+                          )
+                        }
+                        className="p-1 text-muted hover:text-brand"
+                        aria-label="+"
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                    <span className="text-sm font-extrabold text-ink">
+                      {formatPrice(line.price * line.quantity)}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => removeItem(line.productId, line.color, line.size)}
+                  aria-label={t("cart.remove")}
+                  className="self-start p-1 text-muted hover:text-brand"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          <div className="border-t-2 border-line px-5 py-4">
+            <div className="mb-4 flex items-center justify-between">
+              <span className="font-bold text-ink">{t("cart.subtotal")}</span>
+              <span className="text-lg font-extrabold text-ink">{formatPrice(subtotal)}</span>
+            </div>
+            <Link to="/checkout" onClick={closeCart}>
+              <Button variant="brand" size="lg" className="w-full">
+                {t("cart.checkout")}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+    </Drawer>
+  );
+}

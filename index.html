@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>KINDO — Animalerie en ligne | Livraison 58 wilayas, paiement à la livraison</title>
+    <meta
+      name="description"
+      content="KINDO, votre animalerie en ligne en Algérie : alimentation, accessoires et soins pour chiens, chats, oiseaux et poissons. Livraison dans les 58 wilayas, paiement à la livraison."
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="%VITE_SITE_URL%/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="KINDO" />
+    <meta property="og:title" content="KINDO — Animalerie en ligne en Algérie" />
+    <meta
+      property="og:description"
+      content="Alimentation, accessoires et soins pour chiens, chats, oiseaux et poissons. Livraison 58 wilayas, paiement à la livraison."
+    />
+    <meta property="og:url" content="%VITE_SITE_URL%/" />
+    <meta property="og:image" content="%VITE_SITE_URL%/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="KINDO — Animalerie en ligne" />
+    <meta property="og:locale" content="fr_DZ" />
+    <meta property="og:locale:alternate" content="ar_DZ" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="KINDO — Animalerie en ligne en Algérie" />
+    <meta
+      name="twitter:description"
+      content="Alimentation, accessoires et soins pour chiens, chats, oiseaux et poissons. Livraison 58 wilayas, paiement à la livraison."
+    />
+    <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Store",
+        "name": "KINDO",
+        "url": "%VITE_SITE_URL%/",
+        "logo": "%VITE_SITE_URL%/favicon.svg",
+        "description": "Animalerie en ligne en Algérie : alimentation, accessoires et soins pour chiens, chats, oiseaux et poissons.",
+        "areaServed": "Algérie",
+        "paymentAccepted": "Cash on delivery"
+      }
+    </script>
+
+    <!-- Meta Pixel — replace YOUR_PIXEL_ID before go-live (see README go-live checklist) -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+      fbq('init', 'YOUR_PIXEL_ID');
+      fbq('track', 'PageView');
+    </script>
+  </head>
+  <body>
+    <noscript>
+      <img
+        height="1"
+        width="1"
+        style="display: none"
+        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
+      />
+    </noscript>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

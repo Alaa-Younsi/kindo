@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/*
+  KINDO design tokens.
+  Two-layer system: raw --c-* RGB triplets swap per data-theme, and are
+  mapped into Tailwind color names below so components just use bg-panel,
+  text-ink, bg-brand, etc. and get automatic theme + opacity-modifier support.
+*/
+:root,
+html[data-theme="light"] {
+  color-scheme: light;
+  --c-bg: 255 255 255;
+  --c-panel: 255 255 255;
+  --c-panel-2: 248 248 246;
+  --c-line: 228 228 224;
+  --c-ink: 23 23 26;
+  --c-muted: 107 107 114;
+
+  --c-brand: 232 52 42;      /* KINDO red */
+  --c-brand-ink: 255 255 255;
+  --c-blue: 27 108 235;      /* KINDO blue */
+  --c-blue-ink: 255 255 255;
+  --c-green: 32 158 91;      /* KINDO green */
+  --c-green-ink: 255 255 255;
+  --c-yellow: 255 199 41;    /* KINDO yellow */
+  --c-yellow-ink: 33 26 4;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --c-bg: 14 15 17;
+  --c-panel: 23 24 27;
+  --c-panel-2: 30 31 35;
+  --c-line: 45 46 51;
+  --c-ink: 245 245 246;
+  --c-muted: 156 156 163;
+
+  --c-brand: 242 84 72;
+  --c-brand-ink: 20 8 6;
+  --c-blue: 84 150 250;
+  --c-blue-ink: 8 16 34;
+  --c-green: 66 190 128;
+  --c-green-ink: 5 24 14;
+  --c-yellow: 255 209 74;
+  --c-yellow-ink: 33 26 4;
+}
+
+@theme {
+  --font-sans: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+
+  --color-bg: rgb(var(--c-bg));
+  --color-panel: rgb(var(--c-panel));
+  --color-panel-2: rgb(var(--c-panel-2));
+  --color-line: rgb(var(--c-line));
+  --color-ink: rgb(var(--c-ink));
+  --color-muted: rgb(var(--c-muted));
+
+  --color-brand: rgb(var(--c-brand));
+  --color-brand-ink: rgb(var(--c-brand-ink));
+  --color-blue: rgb(var(--c-blue));
+  --color-blue-ink: rgb(var(--c-blue-ink));
+  --color-green: rgb(var(--c-green));
+  --color-green-ink: rgb(var(--c-green-ink));
+  --color-yellow: rgb(var(--c-yellow));
+  --color-yellow-ink: rgb(var(--c-yellow-ink));
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-ink));
+  font-family: var(--font-sans);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Android native <select> popup ignores page color-scheme; styling <option>
+   is what actually carries into that OS-drawn dialog. */
+option {
+  background-color: rgb(var(--c-panel));
+  color: rgb(var(--c-ink));
+}
+
+/* Hide number input spinners (admin delivery-price table on mobile) */
+input[type="number"] {
+  appearance: textfield;
+}
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+::selection {
+  background: rgb(var(--c-brand) / 0.25);
+}
+
+.fx-paw-sweep {
+  position: relative;
+  overflow: hidden;
+}
+.fx-paw-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    115deg,
+    transparent 20%,
+    rgb(255 255 255 / 0.35) 40%,
+    transparent 60%
+  );
+  transform: translateX(-120%);
+  transition: transform 0.6s ease;
+  pointer-events: none;
+}
+.fx-paw-sweep:hover::after {
+  transform: translateX(120%);
+}
