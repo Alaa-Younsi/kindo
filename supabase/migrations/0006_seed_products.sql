@@ -172,6 +172,6 @@ with p as (
   returning id, slug
 )
 insert into product_images (product_id, url, alt, sort_order)
-select p.id, '/images/seed/' || p.slug || '.svg', products.name_fr, 0
+select p.id, '/images/products/' || p.slug || '.webp', products.name_fr, 0
 from p
 join products on products.id = p.id;
