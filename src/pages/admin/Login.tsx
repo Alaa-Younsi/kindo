@@ -24,7 +24,8 @@ export default function AdminLogin() {
     setSubmitting(true);
     try {
       await signIn(email, password);
-    } catch {
+    } catch (err) {
+      console.error("[admin login]", err);
       setError(true);
     } finally {
       setSubmitting(false);
