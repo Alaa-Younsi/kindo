@@ -8,7 +8,7 @@ const KICKER_CLASSES: Record<Tone, string> = {
   brand: "bg-brand/10 text-brand border-brand/30",
   blue: "bg-blue/10 text-blue border-blue/30",
   green: "bg-green/10 text-green border-green/30",
-  yellow: "bg-yellow/20 text-yellow-ink border-yellow/50",
+  yellow: "bg-yellow/20 text-yellow border-yellow/50",
 };
 
 interface SectionHeadingProps {

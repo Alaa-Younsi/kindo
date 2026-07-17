@@ -15,7 +15,7 @@ const CHIP_TONES = [
   "border-brand/40 text-brand hover:bg-brand/10 data-[active=true]:bg-brand data-[active=true]:text-brand-ink data-[active=true]:border-brand",
   "border-blue/40 text-blue hover:bg-blue/10 data-[active=true]:bg-blue data-[active=true]:text-blue-ink data-[active=true]:border-blue",
   "border-green/40 text-green hover:bg-green/10 data-[active=true]:bg-green data-[active=true]:text-green-ink data-[active=true]:border-green",
-  "border-yellow/60 text-yellow-ink hover:bg-yellow/20 data-[active=true]:bg-yellow data-[active=true]:text-yellow-ink data-[active=true]:border-yellow",
+  "border-yellow/60 text-yellow hover:bg-yellow/20 data-[active=true]:bg-yellow data-[active=true]:text-yellow-ink data-[active=true]:border-yellow",
 ] as const;
 
 function SkeletonCard() {

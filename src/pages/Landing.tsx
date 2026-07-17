@@ -53,7 +53,7 @@ const BLOB_TONES = [
   "bg-brand/15 text-brand",
   "bg-blue/15 text-blue",
   "bg-green/15 text-green",
-  "bg-yellow/25 text-yellow-ink",
+  "bg-yellow/25 text-yellow",
 ] as const;
 
 function useActiveReviews() {

@@ -115,7 +115,7 @@ export function Header() {
           </button>
           <button
             onClick={toggleTheme}
-            className="hover-wiggle rounded-full p-2 text-ink transition-colors hover:bg-yellow/25 hover:text-yellow-ink"
+            className="hover-wiggle rounded-full p-2 text-ink transition-colors hover:bg-yellow/25 hover:text-yellow"
             aria-label={t("common.theme")}
           >
             {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}

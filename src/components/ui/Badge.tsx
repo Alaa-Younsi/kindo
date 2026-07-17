@@ -11,7 +11,7 @@ const toneClasses: Record<Tone, string> = {
   brand: "bg-brand/10 text-brand border-brand/30",
   blue: "bg-blue/10 text-blue border-blue/30",
   green: "bg-green/10 text-green border-green/30",
-  yellow: "bg-yellow/15 text-yellow-ink border-yellow/40",
+  yellow: "bg-yellow/15 text-yellow border-yellow/40",
   neutral: "bg-panel-2 text-muted border-line",
 };
 
