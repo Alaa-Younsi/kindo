@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Navigate, NavLink, Outlet } from "react-router-dom";
+import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  ArrowLeft,
   LayoutDashboard,
   ListTree,
   LogOut,
@@ -29,7 +30,7 @@ const NAV_ITEMS = [
 ] as const;
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
-  const { t } = useLanguage();
+  const { t, dir } = useLanguage();
   const { signOut } = useAuth();
 
   return (
@@ -58,6 +59,14 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
       </nav>
       <div className="border-t-2 border-line p-3">
         <SidebarFooter />
+        <Link
+          to="/"
+          onClick={onNavigate}
+          className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-ink hover:bg-panel-2"
+        >
+          <ArrowLeft className={cn("h-4.5 w-4.5", dir === "rtl" && "rotate-180")} />
+          {t("admin.nav.backToSite")}
+        </Link>
         <button
           onClick={() => signOut()}
           className="mt-2 flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-bold text-brand hover:bg-brand/10"

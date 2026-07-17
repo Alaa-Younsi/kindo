@@ -85,6 +85,15 @@ export function Footer() {
                   {t("nav.shop")}
                 </Link>
               </li>
+              <li>
+                <Link
+                  to="/admin"
+                  className="group flex items-center gap-2 transition-colors hover:text-green"
+                >
+                  <Paw className="h-3 w-3 text-green/40 transition-transform group-hover:rotate-12 group-hover:text-green" />
+                  {t("nav.admin")}
+                </Link>
+              </li>
             </ul>
           </div>
 
