@@ -44,6 +44,8 @@ export function ProductCard({ product }: { product: Product }) {
       image: image?.url ?? null,
       color: null,
       size: null,
+      variants: [],
+      quantityOffers: product.quantity_offers,
       stock: product.stock,
     });
     trackAddToCart({

@@ -2,11 +2,18 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { GuestOrderLookup, Order, OrderStatus } from "@/types/db";
 
+export interface PlaceOrderVariantPick {
+  name_fr: string;
+  name_ar: string;
+  value: string;
+}
+
 export interface PlaceOrderItem {
   product_id: string;
   quantity: number;
   color?: string | null;
   size?: string | null;
+  variants?: PlaceOrderVariantPick[];
 }
 
 export interface PlaceOrderCustomer {
@@ -82,7 +89,18 @@ export function useAdminOrder(id: string | undefined) {
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
-      return data as Order | null;
+      if (!data) return null;
+      const order = data as Order;
+      // A DB that hasn't run the variants migration yet returns items
+      // without the column — normalize once here so every consumer can
+      // trust the array.
+      return {
+        ...order,
+        order_items: order.order_items?.map((item) => ({
+          ...item,
+          variants: item.variants ?? [],
+        })),
+      };
     },
     enabled: !!id,
   });
@@ -93,6 +111,22 @@ export function useUpdateOrderStatus() {
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: OrderStatus }) => {
       const { error } = await supabase.from("orders").update({ status }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
+    },
+  });
+}
+
+/** Deleting orders does NOT restock products — the restock trigger only
+ *  fires on the cancelled transition, not on delete. Meant for wiping test
+ *  orders before launch, not routine cleanup. */
+export function useDeleteAllOrders() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("orders").delete().not("id", "is", null);
       if (error) throw error;
     },
     onSuccess: () => {

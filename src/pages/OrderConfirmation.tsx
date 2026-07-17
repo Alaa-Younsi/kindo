@@ -61,21 +61,34 @@ export default function OrderConfirmation() {
       {!isLoading && order && (
         <div className="mt-8 rounded-2xl border-2 border-line bg-panel p-6 text-start">
           <ul className="divide-y-2 divide-line">
-            {order.items.map((item, i) => (
-              <li key={i} className="flex justify-between gap-3 py-3">
-                <span className="text-sm font-bold text-ink">
-                  {lang === "ar" ? item.name_ar : item.name_fr}{" "}
-                  <span className="text-muted">x{item.quantity}</span>
-                </span>
-                <span className="text-sm font-extrabold">{formatPrice(item.price * item.quantity)}</span>
-              </li>
-            ))}
+            {order.items.map((item, i) => {
+              const variantLabels = item.variants.map(
+                (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
+              );
+              const specLine = [item.color, item.size, ...variantLabels].filter(Boolean).join(" · ");
+              return (
+                <li key={i} className="flex justify-between gap-3 py-3">
+                  <span className="text-sm font-bold text-ink">
+                    {lang === "ar" ? item.name_ar : item.name_fr}{" "}
+                    <span className="text-muted">x{item.quantity}</span>
+                    {specLine && <span className="block text-xs font-normal text-muted">{specLine}</span>}
+                  </span>
+                  <span className="text-sm font-extrabold">{formatPrice(item.price * item.quantity)}</span>
+                </li>
+              );
+            })}
           </ul>
           <div className="mt-3 space-y-1 border-t-2 border-line pt-3 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">{t("checkout.subtotal")}</span>
               <span className="font-bold">{formatPrice(order.subtotal)}</span>
             </div>
+            {order.discount > 0 && (
+              <div className="flex justify-between">
+                <span className="text-muted">{t("checkout.discount")}</span>
+                <span className="font-bold text-green">-{formatPrice(order.discount)}</span>
+              </div>
+            )}
             <div className="flex justify-between">
               <span className="text-muted">{t("checkout.shipping")}</span>
               <span className="font-bold">

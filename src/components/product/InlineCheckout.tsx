@@ -11,19 +11,21 @@ import { usePlaceOrder } from "@/hooks/useOrders";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { formatPrice } from "@/lib/format";
+import { lineTotal } from "@/lib/offers";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import type { TranslationKey } from "@/i18n/translations";
-import type { Product } from "@/types/db";
+import type { Product, VariantPick } from "@/types/db";
 
 interface InlineCheckoutProps {
   product: Product;
   color: string | null;
   size: string | null;
+  variants: VariantPick[];
   quantity: number;
 }
 
-export function InlineCheckout({ product, color, size, quantity }: InlineCheckoutProps) {
+export function InlineCheckout({ product, color, size, variants, quantity }: InlineCheckoutProps) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: deliveryPrices } = useDeliveryPrices();
@@ -52,9 +54,10 @@ export function InlineCheckout({ product, color, size, quantity }: InlineCheckou
   );
 
   const goodsSubtotal = product.price * quantity;
+  const goodsAfterDiscount = lineTotal(product.price, quantity, product.quantity_offers);
   const wilayaFee = wilayaFeeFor(deliveryPrices ?? [], wilaya, deliveryType);
-  const shipping = resolveShipping(wilayaFee, goodsSubtotal, settings);
-  const total = goodsSubtotal + (shipping ?? 0);
+  const shipping = resolveShipping(wilayaFee, goodsAfterDiscount, settings);
+  const total = goodsAfterDiscount + (shipping ?? 0);
 
   const handleFormFocus = () => {
     if (trackedCheckoutId.current === product.id) return;
@@ -73,7 +76,7 @@ export function InlineCheckout({ product, color, size, quantity }: InlineCheckou
 
     try {
       const orderNumber = await placeOrder.mutateAsync({
-        items: [{ product_id: product.id, quantity, color, size }],
+        items: [{ product_id: product.id, quantity, color, size, variants }],
         customer: {
           name: values.name,
           phone: values.phone,
@@ -143,6 +146,14 @@ export function InlineCheckout({ product, color, size, quantity }: InlineCheckou
           <span className="text-muted">{t("checkout.subtotal")}</span>
           <span className="font-bold">{formatPrice(goodsSubtotal)}</span>
         </div>
+        {goodsAfterDiscount < goodsSubtotal && (
+          <div className="flex justify-between">
+            <span className="text-muted">{t("checkout.discount")}</span>
+            <span className="font-bold text-green">
+              -{formatPrice(goodsSubtotal - goodsAfterDiscount)}
+            </span>
+          </div>
+        )}
         <div className="flex justify-between">
           <span className="text-muted">{t("checkout.shipping")}</span>
           <span className="font-bold">

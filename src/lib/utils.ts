@@ -1,5 +1,13 @@
+import type { VariantGroup } from "@/types/db";
+
 export function cn(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(" ");
+}
+
+/** A half-filled variant group the admin abandoned must not reach the
+ *  storefront as a nameless/empty picker — filter before writing. */
+export function sanitizeVariantGroups(groups: VariantGroup[]): VariantGroup[] {
+  return groups.filter((g) => g.name_fr.trim() && g.values.length > 0);
 }
 
 export function slugify(input: string): string {

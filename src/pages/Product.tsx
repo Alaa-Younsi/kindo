@@ -25,6 +25,7 @@ export default function ProductPage() {
   const [color, setColor] = useState<string | null>(null);
   const [size, setSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [variantPicks, setVariantPicks] = useState<Record<string, string>>({});
 
   const trackedViewId = useRef<string | null>(null);
 
@@ -84,6 +85,14 @@ export default function ProductPage() {
   const isOut = product.stock <= 0;
   const lowStock = product.stock > 0 && product.stock <= 5;
 
+  const selectedVariants = product.variants
+    .filter((group) => variantPicks[group.name_fr])
+    .map((group) => ({
+      name_fr: group.name_fr,
+      name_ar: group.name_ar,
+      value: variantPicks[group.name_fr],
+    }));
+
   const handleAddToCart = () => {
     addItem(
       {
@@ -95,6 +104,8 @@ export default function ProductPage() {
         image: images[0]?.url ?? null,
         color,
         size,
+        variants: selectedVariants,
+        quantityOffers: product.quantity_offers,
         stock: product.stock,
       },
       quantity,
@@ -237,6 +248,25 @@ export default function ProductPage() {
             </div>
           )}
 
+          {product.variants.map((group) => (
+            <div key={group.name_fr} className="mt-4">
+              <p className="mb-2 text-sm font-bold text-ink">
+                {lang === "ar" ? group.name_ar : group.name_fr}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {group.values.map((val) => (
+                  <button
+                    key={val}
+                    onClick={() => setVariantPicks((prev) => ({ ...prev, [group.name_fr]: val }))}
+                    className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold ${variantPicks[group.name_fr] === val ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
+                  >
+                    {val}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
+
           {!isOut && (
             <div className="mt-5 flex items-center gap-3">
               <p className="text-sm font-bold text-ink">{t("product.quantity")}</p>
@@ -288,7 +318,13 @@ export default function ProductPage() {
                   <Paw className="h-5 w-5 text-brand" />
                   {t("product.buyNow")}
                 </h2>
-                <InlineCheckout product={product} color={color} size={size} quantity={quantity} />
+                <InlineCheckout
+                  product={product}
+                  color={color}
+                  size={size}
+                  variants={selectedVariants}
+                  quantity={quantity}
+                />
               </div>
             </div>
           )}

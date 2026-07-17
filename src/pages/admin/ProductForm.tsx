@@ -8,10 +8,13 @@ import { useCategories } from "@/hooks/useCategories";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { CustomVariantsEditor } from "@/components/admin/CustomVariantsEditor";
+import { OffersEditor } from "@/components/admin/OffersEditor";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { slugify, uniqueSlug } from "@/lib/utils";
+import { slugify, uniqueSlug, sanitizeVariantGroups } from "@/lib/utils";
+import { sanitizeOffers } from "@/lib/offers";
 import { compressImage } from "@/lib/image";
-import type { ProductImage, ProductStatus } from "@/types/db";
+import type { ProductImage, ProductStatus, QuantityOffer, VariantGroup } from "@/types/db";
 
 interface FormState {
   name_fr: string;
@@ -27,6 +30,8 @@ interface FormState {
   style_code: string;
   colors: string;
   sizes: string;
+  variants: VariantGroup[];
+  quantity_offers: QuantityOffer[];
   video_url: string;
   featured: boolean;
   status: ProductStatus;
@@ -46,6 +51,8 @@ const EMPTY_FORM: FormState = {
   style_code: "",
   colors: "",
   sizes: "",
+  variants: [],
+  quantity_offers: [],
   video_url: "",
   featured: false,
   status: "draft",
@@ -80,6 +87,8 @@ export default function ProductForm() {
         style_code: existing.style_code ?? "",
         colors: existing.colors.join(", "),
         sizes: existing.sizes.join(", "),
+        variants: existing.variants,
+        quantity_offers: existing.quantity_offers,
         video_url: existing.video_url ?? "",
         featured: existing.featured,
         status: existing.status,
@@ -104,6 +113,8 @@ export default function ProductForm() {
         style_code: form.style_code || null,
         colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
         sizes: form.sizes.split(",").map((s) => s.trim()).filter(Boolean),
+        variants: sanitizeVariantGroups(form.variants),
+        quantity_offers: sanitizeOffers(form.quantity_offers),
         video_url: form.video_url || null,
         featured: form.featured,
         status: form.status,
@@ -283,6 +294,22 @@ export default function ProductForm() {
           />
           <span className="text-sm font-bold text-ink">Featured</span>
         </label>
+      </div>
+
+      <div className="mt-8">
+        <p className="mb-3 text-sm font-bold text-ink">{t("admin.products.customVariants")}</p>
+        <CustomVariantsEditor
+          value={form.variants}
+          onChange={(variants) => setForm({ ...form, variants })}
+        />
+      </div>
+
+      <div className="mt-8">
+        <p className="mb-3 text-sm font-bold text-ink">{t("admin.products.quantityOffers")}</p>
+        <OffersEditor
+          value={form.quantity_offers}
+          onChange={(quantity_offers) => setForm({ ...form, quantity_offers })}
+        />
       </div>
 
       {!isNew && (

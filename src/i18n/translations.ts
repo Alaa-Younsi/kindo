@@ -104,6 +104,7 @@ export const translations = {
     "checkout.deliveryOffice": "Point de retrait",
     "checkout.summary": "Récapitulatif",
     "checkout.subtotal": "Sous-total",
+    "checkout.discount": "Remise",
     "checkout.shipping": "Livraison",
     "checkout.shippingFree": "Offerte",
     "checkout.shippingUnknown": "—",
@@ -181,6 +182,19 @@ export const translations = {
     "admin.products.active": "Actif",
     "admin.products.draft": "Brouillon",
     "admin.products.new": "Nouveau produit",
+    "admin.products.customVariants": "Variantes personnalisées",
+    "admin.products.variantNameFr": "Nom de la variante (FR)",
+    "admin.products.variantNameAr": "اسم الخاصية (AR)",
+    "admin.products.variantValuePlaceholder": "Ajouter une valeur",
+    "admin.products.addVariantGroup": "Ajouter un groupe de variantes",
+    "admin.products.quantityOffers": "Offres par quantité",
+    "admin.products.offerFree": "Achetez X, obtenez Y gratuit",
+    "admin.products.offerPrice": "Lot à prix fixe",
+    "admin.products.offerBuy": "Acheter",
+    "admin.products.offerGet": "Obtenir",
+    "admin.products.offerQty": "Quantité du lot",
+    "admin.products.offerBundlePrice": "Prix du lot",
+    "admin.products.addOffer": "Ajouter une offre",
 
     // Admin orders
     "admin.orders.title": "Commandes",
@@ -194,6 +208,13 @@ export const translations = {
     "admin.orders.status.shipped": "Expédiée",
     "admin.orders.status.delivered": "Livrée",
     "admin.orders.status.cancelled": "Annulée",
+    "admin.orders.export": "Exporter",
+    "admin.orders.deleteAll.button": "Tout supprimer",
+    "admin.orders.deleteAll.title": "Supprimer toutes les commandes ?",
+    "admin.orders.deleteAll.warning":
+      "Vous êtes sur le point de supprimer définitivement {count} commande(s). Cette action est irréversible.",
+    "admin.orders.deleteAll.exportFirst": "Exporter avant",
+    "admin.orders.deleteAll.confirm": "Supprimer définitivement",
 
     // Admin delivery prices
     "admin.delivery.title": "Tarifs de livraison",
@@ -319,6 +340,7 @@ export const translations = {
     "checkout.deliveryOffice": "نقطة استلام",
     "checkout.summary": "ملخص الطلب",
     "checkout.subtotal": "المجموع الفرعي",
+    "checkout.discount": "الخصم",
     "checkout.shipping": "التوصيل",
     "checkout.shippingFree": "مجاني",
     "checkout.shippingUnknown": "—",
@@ -396,6 +418,19 @@ export const translations = {
     "admin.products.active": "نشط",
     "admin.products.draft": "مسودة",
     "admin.products.new": "منتج جديد",
+    "admin.products.customVariants": "خصائص مخصصة",
+    "admin.products.variantNameFr": "Nom de la variante (FR)",
+    "admin.products.variantNameAr": "اسم الخاصية (AR)",
+    "admin.products.variantValuePlaceholder": "أضف قيمة",
+    "admin.products.addVariantGroup": "إضافة مجموعة خصائص",
+    "admin.products.quantityOffers": "عروض حسب الكمية",
+    "admin.products.offerFree": "اشترِ X واحصل على Y مجانًا",
+    "admin.products.offerPrice": "حزمة بسعر ثابت",
+    "admin.products.offerBuy": "اشترِ",
+    "admin.products.offerGet": "احصل على",
+    "admin.products.offerQty": "كمية الحزمة",
+    "admin.products.offerBundlePrice": "سعر الحزمة",
+    "admin.products.addOffer": "إضافة عرض",
 
     // Admin orders
     "admin.orders.title": "الطلبات",
@@ -409,6 +444,13 @@ export const translations = {
     "admin.orders.status.shipped": "تم الشحن",
     "admin.orders.status.delivered": "تم التوصيل",
     "admin.orders.status.cancelled": "ملغى",
+    "admin.orders.export": "تصدير",
+    "admin.orders.deleteAll.button": "حذف الكل",
+    "admin.orders.deleteAll.title": "حذف جميع الطلبات؟",
+    "admin.orders.deleteAll.warning":
+      "أنت على وشك حذف {count} طلب (طلبات) نهائيًا. لا يمكن التراجع عن هذا الإجراء.",
+    "admin.orders.deleteAll.exportFirst": "تصدير أولاً",
+    "admin.orders.deleteAll.confirm": "حذف نهائي",
 
     // Admin delivery prices
     "admin.delivery.title": "أسعار التوصيل",

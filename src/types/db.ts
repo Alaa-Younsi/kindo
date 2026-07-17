@@ -3,6 +3,22 @@ export type DeliveryType = "home" | "office";
 export type ProductStatus = "active" | "draft";
 export type Lang = "fr" | "ar";
 
+export interface VariantGroup {
+  name_fr: string;
+  name_ar: string;
+  values: string[];
+}
+
+export interface VariantPick {
+  name_fr: string;
+  name_ar: string;
+  value: string;
+}
+
+export type QuantityOffer =
+  | { type: "free"; buy: number; get: number }
+  | { type: "price"; qty: number; price: number };
+
 export interface Category {
   id: string;
   slug: string;
@@ -39,6 +55,8 @@ export interface Product {
   style_code: string | null;
   colors: string[];
   sizes: string[];
+  variants: VariantGroup[];
+  quantity_offers: QuantityOffer[];
   video_url: string | null;
   featured: boolean;
   status: ProductStatus;
@@ -74,6 +92,7 @@ export interface OrderItem {
   quantity: number;
   color: string | null;
   size: string | null;
+  variants: VariantPick[];
   image_url: string | null;
 }
 
@@ -88,6 +107,7 @@ export interface Order {
   notes: string | null;
   subtotal: number;
   shipping: number;
+  discount: number;
   total: number;
   status: OrderStatus;
   language: Lang;
@@ -114,6 +134,7 @@ export interface GuestOrderLookup {
   delivery_type: DeliveryType;
   subtotal: number;
   shipping: number;
+  discount: number;
   total: number;
   status: OrderStatus;
   language: Lang;
@@ -125,6 +146,7 @@ export interface GuestOrderLookup {
     quantity: number;
     color: string | null;
     size: string | null;
+    variants: VariantPick[];
     image_url: string | null;
   }>;
 }

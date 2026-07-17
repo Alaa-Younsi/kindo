@@ -71,7 +71,7 @@ export default function AdminDeliveryPrices() {
                       value={row.home_price}
                       onChange={(e) => handleChange(row.id, { home_price: Number(e.target.value) })}
                       onBlur={() => handleBlurSave(row.id)}
-                      className="w-full rounded-lg border-2 border-line bg-panel px-2 py-1.5 text-sm"
+                      className="w-full rounded-lg border-2 border-line bg-panel px-2 py-1.5 text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </td>
                   <td className="w-32 px-4 py-3">
@@ -81,7 +81,7 @@ export default function AdminDeliveryPrices() {
                       value={row.office_price}
                       onChange={(e) => handleChange(row.id, { office_price: Number(e.target.value) })}
                       onBlur={() => handleBlurSave(row.id)}
-                      className="w-full rounded-lg border-2 border-line bg-panel px-2 py-1.5 text-sm"
+                      className="w-full rounded-lg border-2 border-line bg-panel px-2 py-1.5 text-sm [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
                   </td>
                   <td className="w-20 px-4 py-3">

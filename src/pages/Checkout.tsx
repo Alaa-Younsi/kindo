@@ -17,6 +17,7 @@ import { usePlaceOrder } from "@/hooks/useOrders";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { formatPrice } from "@/lib/format";
+import { lineTotal } from "@/lib/offers";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { useSeo } from "@/hooks/useSeo";
@@ -56,9 +57,14 @@ export default function Checkout() {
     [deliveryPrices],
   );
 
+  const goodsAfterDiscount = items.reduce(
+    (sum, line) => sum + lineTotal(line.price, line.quantity, line.quantityOffers),
+    0,
+  );
+  const discount = subtotal - goodsAfterDiscount;
   const wilayaFee = wilayaFeeFor(deliveryPrices ?? [], wilaya, deliveryType);
-  const shipping = resolveShipping(wilayaFee, subtotal, settings);
-  const total = subtotal + (shipping ?? 0);
+  const shipping = resolveShipping(wilayaFee, goodsAfterDiscount, settings);
+  const total = goodsAfterDiscount + (shipping ?? 0);
 
   useEffect(() => {
     if (trackedInitiate.current || items.length === 0) return;
@@ -83,6 +89,7 @@ export default function Checkout() {
           quantity: line.quantity,
           color: line.color,
           size: line.size,
+          variants: line.variants,
         })),
         customer: {
           name: values.name,
@@ -176,34 +183,47 @@ export default function Checkout() {
         <div>
           <h2 className="mb-4 font-display text-lg font-extrabold text-ink">{t("checkout.summary")}</h2>
           <ul className="divide-y-2 divide-line rounded-2xl border-2 border-line bg-panel">
-            {items.map((line) => (
-              <li key={`${line.productId}-${line.color}-${line.size}`} className="flex gap-3 p-4">
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">
-                  {line.image && (
-                    <img
-                      src={line.image}
-                      alt=""
-                      width={56}
-                      height={56}
-                      loading="lazy"
-                      decoding="async"
-                      className="h-full w-full object-cover"
-                    />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm font-bold text-ink">
-                    {lang === "ar" ? line.name_ar : line.name_fr}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {t("product.quantity")}: {line.quantity}
-                  </p>
-                </div>
-                <span className="text-sm font-extrabold text-ink">
-                  {formatPrice(line.price * line.quantity)}
-                </span>
-              </li>
-            ))}
+            {items.map((line) => {
+              const variantLabels = line.variants.map(
+                (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
+              );
+              return (
+                <li
+                  key={`${line.productId}-${line.color}-${line.size}-${line.variants.map((v) => v.value).join(",")}`}
+                  className="flex gap-3 p-4"
+                >
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">
+                    {line.image && (
+                      <img
+                        src={line.image}
+                        alt=""
+                        width={56}
+                        height={56}
+                        loading="lazy"
+                        decoding="async"
+                        className="h-full w-full object-cover"
+                      />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-bold text-ink">
+                      {lang === "ar" ? line.name_ar : line.name_fr}
+                    </p>
+                    {(line.color || line.size || variantLabels.length > 0) && (
+                      <p className="text-xs text-muted">
+                        {[line.color, line.size, ...variantLabels].filter(Boolean).join(" · ")}
+                      </p>
+                    )}
+                    <p className="text-xs text-muted">
+                      {t("product.quantity")}: {line.quantity}
+                    </p>
+                  </div>
+                  <span className="text-sm font-extrabold text-ink">
+                    {formatPrice(lineTotal(line.price, line.quantity, line.quantityOffers))}
+                  </span>
+                </li>
+              );
+            })}
           </ul>
 
           <div className="mt-4 rounded-2xl bg-gradient-to-br from-green via-blue to-brand p-[3px] shadow-lg">
@@ -212,6 +232,12 @@ export default function Checkout() {
                 <span className="text-muted">{t("checkout.subtotal")}</span>
                 <span className="font-bold">{formatPrice(subtotal)}</span>
               </div>
+              {discount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-muted">{t("checkout.discount")}</span>
+                  <span className="font-bold text-green">-{formatPrice(discount)}</span>
+                </div>
+              )}
               <div className="flex justify-between">
                 <span className="text-muted">{t("checkout.shipping")}</span>
                 <span className="font-bold text-green">

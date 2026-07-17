@@ -65,6 +65,12 @@ export default function AdminOrderDetail() {
             <span className="text-muted">{t("checkout.subtotal")}</span>
             <span className="font-bold">{formatPrice(order.subtotal)}</span>
           </div>
+          {order.discount > 0 && (
+            <div className="flex justify-between text-sm">
+              <span className="text-muted">{t("checkout.discount")}</span>
+              <span className="font-bold text-green">-{formatPrice(order.discount)}</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-muted">{t("checkout.shipping")}</span>
             <span className="font-bold">{formatPrice(order.shipping)}</span>
@@ -99,9 +105,17 @@ export default function AdminOrderDetail() {
                 <p className="text-sm font-bold text-ink">
                   {lang === "ar" ? item.name_ar : item.name_fr}
                 </p>
-                {(item.color || item.size) && (
+                {(item.color || item.size || item.variants.length > 0) && (
                   <p className="text-xs text-muted">
-                    {[item.color, item.size].filter(Boolean).join(" · ")}
+                    {[
+                      item.color,
+                      item.size,
+                      ...item.variants.map(
+                        (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
+                      ),
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 )}
                 <p className="text-xs text-muted">
