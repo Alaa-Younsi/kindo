@@ -1,4 +1,7 @@
--- KINDO — seed data: categories + delivery prices for all 58 wilayas
+-- KINDO — seed data: categories + delivery prices for the (then-current) 58
+-- wilayas. The 11 wilayas added in the April 2026 reorganization are seeded
+-- separately in 0012_new_wilayas_2026.sql — never edit this file after the
+-- fact, see the migration-numbering rule.
 -- Product catalogue itself is seeded through the admin UI (Phase 10 of the
 -- go-live checklist), not raw SQL, to prove the CRUD forms work.
 

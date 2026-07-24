@@ -15,7 +15,7 @@ export const translations = {
     "nav.admin": "Espace admin",
 
     // Hero
-    "hero.badge": "Livraison dans les 58 wilayas",
+    "hero.badge": "Livraison dans les 69 wilayas",
     "hero.title": "Le bonheur de vos animaux, livré chez vous",
     "hero.subtitle":
       "Nourriture, accessoires et soins pour chiens, chats, oiseaux et poissons — paiement à la livraison, partout en Algérie.",
@@ -24,7 +24,7 @@ export const translations = {
 
     // Trust badges
     "trust.cod": "Paiement à la livraison",
-    "trust.delivery": "Livraison rapide 58 wilayas",
+    "trust.delivery": "Livraison rapide 69 wilayas",
     "trust.quality": "Produits de qualité",
     "trust.support": "Support client réactif",
 
@@ -55,6 +55,10 @@ export const translations = {
     "featured.title": "Produits populaires",
     "featured.subtitle": "Les préférés de nos clients et de leurs animaux",
 
+    // Certifications
+    "certifications.title": "Nos certifications",
+    "certifications.subtitle": "Des partenaires reconnus pour la qualité et la conformité de nos produits",
+
     // Testimonials
     "testimonials.title": "Ils nous font confiance",
 
@@ -63,6 +67,12 @@ export const translations = {
     "shop.filter.category": "Catégorie",
     "shop.filter.all": "Toutes les catégories",
     "shop.filter.search": "Rechercher",
+    "shop.filter.title": "Filtres",
+    "shop.filter.price": "Prix",
+    "shop.filter.animal": "Animal",
+    "shop.filter.productType": "Type de produit",
+    "shop.filter.reset": "Réinitialiser",
+    "shop.filter.apply": "Voir les résultats",
     "shop.empty": "Aucun produit trouvé.",
     "shop.results": "produit(s) trouvé(s)",
 
@@ -252,7 +262,7 @@ export const translations = {
     "nav.admin": "لوحة التحكم",
 
     // Hero
-    "hero.badge": "التوصيل إلى 58 ولاية",
+    "hero.badge": "التوصيل إلى 69 ولاية",
     "hero.title": "سعادة حيوانك الأليف، توصَل إلى بابك",
     "hero.subtitle":
       "أطعمة، إكسسوارات وعناية للكلاب والقطط والطيور والأسماك — الدفع عند الاستلام، في كل الجزائر.",
@@ -261,7 +271,7 @@ export const translations = {
 
     // Trust badges
     "trust.cod": "الدفع عند الاستلام",
-    "trust.delivery": "توصيل سريع لـ 58 ولاية",
+    "trust.delivery": "توصيل سريع لـ 69 ولاية",
     "trust.quality": "منتجات ذات جودة",
     "trust.support": "دعم عملاء سريع",
 
@@ -292,6 +302,10 @@ export const translations = {
     "featured.title": "المنتجات الأكثر طلبًا",
     "featured.subtitle": "المفضلة لدى عملائنا وحيواناتهم",
 
+    // Certifications
+    "certifications.title": "شهاداتنا",
+    "certifications.subtitle": "شركاء معتمدون لجودة ومطابقة منتجاتنا",
+
     // Testimonials
     "testimonials.title": "يثقون بنا",
 
@@ -300,6 +314,12 @@ export const translations = {
     "shop.filter.category": "الفئة",
     "shop.filter.all": "كل الفئات",
     "shop.filter.search": "بحث",
+    "shop.filter.title": "الفلاتر",
+    "shop.filter.price": "السعر",
+    "shop.filter.animal": "الحيوان",
+    "shop.filter.productType": "نوع المنتج",
+    "shop.filter.reset": "إعادة تعيين",
+    "shop.filter.apply": "عرض النتائج",
     "shop.empty": "لم يتم العثور على منتجات.",
     "shop.results": "منتج (منتجات)",
 

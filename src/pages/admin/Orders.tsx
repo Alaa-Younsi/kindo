@@ -6,8 +6,9 @@ import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DeleteAllOrdersModal } from "@/components/admin/DeleteAllOrdersModal";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate, formatPrice } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { exportOrdersToExcel } from "@/lib/exportOrders";
 import type { OrderStatus } from "@/types/db";
 
@@ -96,7 +97,9 @@ export default function AdminOrders() {
                     </Link>
                   </td>
                   <td className="whitespace-nowrap px-4 py-3">{order.customer_name}</td>
-                  <td className="whitespace-nowrap px-4 py-3 font-bold">{formatPrice(order.total)}</td>
+                  <td className="whitespace-nowrap px-4 py-3 font-bold">
+                    <Price value={order.total} />
+                  </td>
                   <td className="whitespace-nowrap px-4 py-3">
                     <Badge tone={STATUS_TONE[order.status]}>
                       {t(`admin.orders.status.${order.status}`)}

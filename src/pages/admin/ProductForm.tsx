@@ -5,6 +5,7 @@ import { GripVertical, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAdminProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
+import { buildCategoryTree, flattenWithDepth } from "@/lib/categories";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -65,6 +66,7 @@ export default function ProductForm() {
   const queryClient = useQueryClient();
   const { t } = useLanguage();
   const { data: categories } = useCategories();
+  const orderedCategories = categories ? flattenWithDepth(buildCategoryTree(categories)) : [];
   const { data: existing } = useAdminProduct(isNew ? undefined : id);
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
@@ -251,9 +253,10 @@ export default function ProductForm() {
           onChange={(e) => setForm({ ...form, category_id: e.target.value })}
         >
           <option value="">{t("shop.filter.all")}</option>
-          {categories?.map((cat) => (
-            <option key={cat.id} value={cat.id}>
-              {cat.name_fr}
+          {orderedCategories.map(({ node, depth }) => (
+            <option key={node.id} value={node.id}>
+              {"— ".repeat(depth)}
+              {node.name_fr}
             </option>
           ))}
         </Select>

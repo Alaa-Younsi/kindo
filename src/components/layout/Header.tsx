@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Menu, Moon, Search, ShoppingBag, Sun, X } from "lucide-react";
+import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
 import { Logo } from "./Logo";
+import { ShoppingBagIcon } from "@/components/icons/ShoppingBagIcon";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { useCartStore } from "@/store/cart";
 import { useCategories } from "@/hooks/useCategories";
+import { buildCategoryTree, type CategoryNode } from "@/lib/categories";
 import { localize } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import type { Lang } from "@/types/db";
 
 const LINK_TONES = [
   "hover:text-brand",
@@ -34,7 +37,7 @@ function NavLinkItem({
     <Link
       to={to}
       onClick={onClick}
-      className={cn("group relative text-sm font-bold text-ink transition-colors", tone)}
+      className={cn("group relative text-base font-bold text-ink transition-colors", tone)}
     >
       {children}
       <span
@@ -42,6 +45,130 @@ function NavLinkItem({
         className="absolute -bottom-1 start-0 h-0.5 w-full origin-left scale-x-0 rounded-full bg-current transition-transform duration-200 group-hover:scale-x-100"
       />
     </Link>
+  );
+}
+
+/** Desktop nav item: plain link, or a hover mega-menu when the category has subcategories. */
+function CategoryNavItem({
+  category,
+  tone,
+  lang,
+}: {
+  category: CategoryNode;
+  tone: string;
+  lang: Lang;
+}) {
+  const [open, setOpen] = useState(false);
+  const hasChildren = category.children.length > 0;
+
+  return (
+    <div
+      className="relative"
+      onMouseEnter={() => hasChildren && setOpen(true)}
+      onMouseLeave={() => hasChildren && setOpen(false)}
+    >
+      <NavLinkItem to={`/shop?categories=${category.slug}`} tone={tone}>
+        <span className="inline-flex items-center gap-1">
+          {localize(category, "name", lang)}
+          {hasChildren && <ChevronDown className="h-3.5 w-3.5" />}
+        </span>
+      </NavLinkItem>
+
+      {hasChildren && open && (
+        <div className="absolute start-0 top-full z-40 mt-3 flex gap-8 rounded-2xl border-2 border-line bg-panel p-6 shadow-2xl">
+          {category.children.map((group) => (
+            <div key={group.id} className="min-w-[160px]">
+              <Link
+                to={`/shop?categories=${group.slug}`}
+                className="mb-3 block text-xs font-extrabold uppercase tracking-wide text-muted transition-colors hover:text-brand"
+              >
+                {localize(group, "name", lang)}
+              </Link>
+              {group.children.length > 0 && (
+                <ul className="flex flex-col gap-2">
+                  {group.children.map((leaf) => (
+                    <li key={leaf.id}>
+                      <Link
+                        to={`/shop?categories=${leaf.slug}`}
+                        className="text-sm font-bold text-ink transition-colors hover:text-brand"
+                      >
+                        {localize(leaf, "name", lang)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/** Mobile nav item: plain link, or an accordion disclosure when the category has subcategories. */
+function CategoryMobileItem({
+  category,
+  tone,
+  lang,
+  onNavigate,
+}: {
+  category: CategoryNode;
+  tone: string;
+  lang: Lang;
+  onNavigate: () => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const hasChildren = category.children.length > 0;
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <NavLinkItem to={`/shop?categories=${category.slug}`} tone={tone} onClick={onNavigate}>
+          {localize(category, "name", lang)}
+        </NavLinkItem>
+        {hasChildren && (
+          <button
+            onClick={() => setExpanded((v) => !v)}
+            aria-label={localize(category, "name", lang)}
+            className="rounded-full p-1.5 text-muted transition-transform hover:bg-panel-2"
+          >
+            <ChevronDown className={cn("h-4 w-4 transition-transform", expanded && "rotate-180")} />
+          </button>
+        )}
+      </div>
+
+      {hasChildren && expanded && (
+        <div className="ms-3 mt-2 flex flex-col gap-3 border-s-2 border-line ps-3">
+          {category.children.map((group) => (
+            <div key={group.id}>
+              <Link
+                to={`/shop?categories=${group.slug}`}
+                onClick={onNavigate}
+                className="text-xs font-extrabold uppercase tracking-wide text-muted"
+              >
+                {localize(group, "name", lang)}
+              </Link>
+              {group.children.length > 0 && (
+                <ul className="mt-1.5 flex flex-col gap-1.5">
+                  {group.children.map((leaf) => (
+                    <li key={leaf.id}>
+                      <Link
+                        to={`/shop?categories=${leaf.slug}`}
+                        onClick={onNavigate}
+                        className="text-sm font-semibold text-ink"
+                      >
+                        {localize(leaf, "name", lang)}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -56,6 +183,8 @@ export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
 
+  const topLevel = categories ? buildCategoryTree(categories) : [];
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     navigate(`/shop?q=${encodeURIComponent(searchValue.trim())}`);
@@ -64,25 +193,23 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-30 border-b-2 border-line bg-panel/95 backdrop-blur">
-      {/* rainbow brand stripe */}
-      <div
-        aria-hidden
-        className="h-1.5 bg-[linear-gradient(90deg,rgb(var(--c-brand)),rgb(var(--c-yellow)),rgb(var(--c-green)),rgb(var(--c-blue)))]"
-      />
       <div className="mx-auto flex max-w-7xl items-center gap-4 px-4 py-3 sm:px-6 lg:px-8">
         <Logo />
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="ms-4 hidden items-center gap-6 lg:ms-10 lg:flex">
           <NavLinkItem to="/" tone={LINK_TONES[0]}>
             {t("nav.home")}
           </NavLinkItem>
           <NavLinkItem to="/shop" tone={LINK_TONES[1]}>
             {t("nav.shop")}
           </NavLinkItem>
-          {categories?.slice(0, 4).map((cat, i) => (
-            <NavLinkItem key={cat.id} to={`/shop?category=${cat.slug}`} tone={LINK_TONES[(i + 2) % LINK_TONES.length]}>
-              {localize(cat, "name", lang)}
-            </NavLinkItem>
+          {topLevel.slice(0, 4).map((cat, i) => (
+            <CategoryNavItem
+              key={cat.id}
+              category={cat}
+              tone={LINK_TONES[(i + 2) % LINK_TONES.length]}
+              lang={lang}
+            />
           ))}
         </nav>
 
@@ -125,7 +252,7 @@ export function Header() {
             className="relative rounded-full p-2 text-ink transition-all hover:-rotate-6 hover:bg-brand/10 hover:text-brand"
             aria-label={t("nav.cart")}
           >
-            <ShoppingBag className="h-5 w-5" />
+            <ShoppingBagIcon className="h-5 w-5" />
             {totalCount > 0 && (
               <motion.span
                 key={totalCount}
@@ -175,15 +302,14 @@ export function Header() {
             <NavLinkItem to="/shop" tone={LINK_TONES[1]} onClick={() => setMobileOpen(false)}>
               {t("nav.shop")}
             </NavLinkItem>
-            {categories?.map((cat, i) => (
-              <NavLinkItem
+            {topLevel.map((cat, i) => (
+              <CategoryMobileItem
                 key={cat.id}
-                to={`/shop?category=${cat.slug}`}
+                category={cat}
                 tone={LINK_TONES[(i + 2) % LINK_TONES.length]}
-                onClick={() => setMobileOpen(false)}
-              >
-                {localize(cat, "name", lang)}
-              </NavLinkItem>
+                lang={lang}
+                onNavigate={() => setMobileOpen(false)}
+              />
             ))}
           </nav>
         </div>

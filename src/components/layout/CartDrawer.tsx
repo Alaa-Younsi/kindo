@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
+import { Price } from "@/components/ui/Price";
 import { CatMascot } from "@/components/effects/mascots";
 import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatPrice } from "@/lib/format";
 import { lineTotal } from "@/lib/offers";
 
 export function CartDrawer() {
@@ -114,9 +114,10 @@ export function CartDrawer() {
                           <Plus className="h-3.5 w-3.5" />
                         </button>
                       </div>
-                      <span className="text-sm font-extrabold text-brand">
-                        {formatPrice(lineTotal(line.price, line.quantity, line.quantityOffers))}
-                      </span>
+                      <Price
+                        value={lineTotal(line.price, line.quantity, line.quantityOffers)}
+                        className="text-sm font-extrabold text-brand"
+                      />
                     </div>
                   </div>
                   <button
@@ -134,7 +135,7 @@ export function CartDrawer() {
           <div className="border-t-2 border-line px-5 py-4">
             <div className="mb-4 flex items-center justify-between">
               <span className="font-bold text-ink">{t("cart.subtotal")}</span>
-              <span className="text-lg font-extrabold text-ink">{formatPrice(cartTotal)}</span>
+              <Price value={cartTotal} className="text-lg font-extrabold text-ink" />
             </div>
             <Link to="/checkout" onClick={closeCart}>
               <Button variant="brand" size="lg" className="w-full">

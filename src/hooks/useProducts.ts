@@ -35,8 +35,10 @@ export function useFeaturedProducts(limit = 8) {
 }
 
 export interface ProductFilters {
-  categorySlug?: string | null;
+  categorySlugs?: string[];
   search?: string;
+  minPrice?: number;
+  maxPrice?: number;
 }
 
 export function useProducts(filters: ProductFilters = {}) {
@@ -49,17 +51,14 @@ export function useProducts(filters: ProductFilters = {}) {
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
-      if (filters.categorySlug) {
-        const { data: category } = await supabase
+      if (filters.categorySlugs && filters.categorySlugs.length > 0) {
+        const { data: cats } = await supabase
           .from("categories")
           .select("id")
-          .eq("slug", filters.categorySlug)
-          .maybeSingle();
-        if (category) {
-          query = query.eq("category_id", category.id);
-        } else {
-          return [];
-        }
+          .in("slug", filters.categorySlugs);
+        const ids = (cats ?? []).map((c) => c.id);
+        if (ids.length === 0) return [];
+        query = query.in("category_id", ids);
       }
 
       if (filters.search && filters.search.trim().length > 0) {
@@ -67,11 +66,29 @@ export function useProducts(filters: ProductFilters = {}) {
         query = query.or(`name_fr.ilike.%${term}%,name_ar.ilike.%${term}%`);
       }
 
+      if (filters.minPrice != null) query = query.gte("price", filters.minPrice);
+      if (filters.maxPrice != null) query = query.lte("price", filters.maxPrice);
+
       const { data, error } = await query;
       if (error) throw error;
       return ((data as Product[]) ?? []).map(normalizeProduct);
     },
     staleTime: 30 * 1000,
+  });
+}
+
+/** Min/max active price, used to seed the shop price-range filter bounds. */
+export function usePriceBounds() {
+  return useQuery({
+    queryKey: ["products", "price-bounds"],
+    queryFn: async (): Promise<{ min: number; max: number }> => {
+      const [{ data: lowest }, { data: highest }] = await Promise.all([
+        supabase.from("products").select("price").eq("status", "active").order("price", { ascending: true }).limit(1).maybeSingle(),
+        supabase.from("products").select("price").eq("status", "active").order("price", { ascending: false }).limit(1).maybeSingle(),
+      ]);
+      return { min: lowest?.price ?? 0, max: highest?.price ?? 10000 };
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 

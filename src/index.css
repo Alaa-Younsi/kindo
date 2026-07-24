@@ -46,8 +46,8 @@ html[data-theme="dark"] {
 }
 
 @theme {
-  --font-sans: "Baloo 2", "Segoe UI", system-ui, sans-serif;
-  --font-display: "Baloo 2", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Poppins", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Poppins", "Segoe UI", system-ui, sans-serif;
 
   --color-bg: rgb(var(--c-bg));
   --color-panel: rgb(var(--c-panel));
@@ -261,13 +261,52 @@ input[type="number"]::-webkit-inner-spin-button {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Cg fill='%23808080' fill-opacity='0.07'%3E%3Cg transform='translate(28 30) rotate(-18)'%3E%3Cellipse cx='0' cy='8' rx='9' ry='7.5'/%3E%3Cellipse cx='-10' cy='-4' rx='4' ry='5.4'/%3E%3Cellipse cx='-3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='10' cy='-4' rx='4' ry='5.4'/%3E%3C/g%3E%3Cg transform='translate(112 108) rotate(22)'%3E%3Cellipse cx='0' cy='8' rx='9' ry='7.5'/%3E%3Cellipse cx='-10' cy='-4' rx='4' ry='5.4'/%3E%3Cellipse cx='-3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='3.5' cy='-9' rx='4' ry='5.4'/%3E%3Cellipse cx='10' cy='-4' rx='4' ry='5.4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
 
-/* Squiggle underline for section headings. */
-.squiggle {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='10' viewBox='0 0 120 10'%3E%3Cpath d='M2 7 Q 12 1 22 6 T 42 6 T 62 6 T 82 6 T 102 6 T 118 5' fill='none' stroke='%23E8342A' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: center bottom;
-  background-size: 120px 10px;
-  padding-bottom: 12px;
+/* Hide the scrollbar on horizontally-scrollable chip/pill rows. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Dual-thumb price slider: two overlapping range inputs, track hidden,
+   only the thumb is clickable so both handles stay independently draggable. */
+.range-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+  pointer-events: none;
+}
+.range-thumb::-webkit-slider-runnable-track {
+  background: transparent;
+}
+.range-thumb::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background: rgb(var(--c-brand));
+  border: 3px solid rgb(var(--c-panel));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  cursor: pointer;
+  margin-top: 0;
+}
+.range-thumb::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+.range-thumb::-moz-range-thumb {
+  pointer-events: auto;
+  height: 18px;
+  width: 18px;
+  border-radius: 9999px;
+  background: rgb(var(--c-brand));
+  border: 3px solid rgb(var(--c-panel));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.35);
+  cursor: pointer;
 }
 
 /* Marquee band (always LTR internally — decorative direction). */
@@ -290,17 +329,11 @@ input[type="number"]::-webkit-inner-spin-button {
   animation: kf-shimmer 1.6s linear infinite;
 }
 
-/* Gradient scrollbar in brand colors. */
+/* Scrollbar in a single brand color. */
 ::-webkit-scrollbar { width: 12px; }
 ::-webkit-scrollbar-track { background: rgb(var(--c-panel-2)); }
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(
-    180deg,
-    rgb(var(--c-brand)),
-    rgb(var(--c-yellow)),
-    rgb(var(--c-green)),
-    rgb(var(--c-blue))
-  );
+  background: rgb(var(--c-brand));
   border-radius: 8px;
   border: 3px solid rgb(var(--c-panel-2));
 }

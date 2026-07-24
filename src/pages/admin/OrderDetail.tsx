@@ -2,8 +2,9 @@ import { useParams } from "react-router-dom";
 import { useAdminOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { Select } from "@/components/ui/Select";
 import { BentoPanel } from "@/components/ui/BentoPanel";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate, formatPrice } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { OrderStatus } from "@/types/db";
 
 export default function AdminOrderDetail() {
@@ -63,21 +64,21 @@ export default function AdminOrderDetail() {
           </h2>
           <div className="flex justify-between text-sm">
             <span className="text-muted">{t("checkout.subtotal")}</span>
-            <span className="font-bold">{formatPrice(order.subtotal)}</span>
+            <Price value={order.subtotal} className="font-bold" />
           </div>
           {order.discount > 0 && (
             <div className="flex justify-between text-sm">
               <span className="text-muted">{t("checkout.discount")}</span>
-              <span className="font-bold text-green">-{formatPrice(order.discount)}</span>
+              <Price value={order.discount} prefix="-" className="font-bold text-green" />
             </div>
           )}
           <div className="flex justify-between text-sm">
             <span className="text-muted">{t("checkout.shipping")}</span>
-            <span className="font-bold">{formatPrice(order.shipping)}</span>
+            <Price value={order.shipping} className="font-bold" />
           </div>
           <div className="mt-2 flex justify-between border-t-2 border-line pt-2">
             <span className="font-extrabold">{t("checkout.total")}</span>
-            <span className="font-extrabold text-brand">{formatPrice(order.total)}</span>
+            <Price value={order.total} className="font-extrabold text-brand" />
           </div>
         </BentoPanel>
       </div>
@@ -122,7 +123,7 @@ export default function AdminOrderDetail() {
                   {t("product.quantity")}: {item.quantity}
                 </p>
               </div>
-              <span className="text-sm font-extrabold">{formatPrice(item.price * item.quantity)}</span>
+              <Price value={item.price * item.quantity} className="text-sm font-extrabold" />
             </li>
           ))}
         </ul>

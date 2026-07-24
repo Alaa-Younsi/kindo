@@ -18,9 +18,9 @@ import { TiltCard } from "@/components/effects/TiltCard";
 import { PawScatter, Paw } from "@/components/effects/PawScatter";
 import { WaveDivider } from "@/components/effects/WaveDivider";
 import { Marquee } from "@/components/effects/Marquee";
-import { BirdMascot, CatMascot, DogMascot, FishMascot } from "@/components/effects/mascots";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
+import { topLevelCategories } from "@/lib/categories";
 import { useFeaturedProducts } from "@/hooks/useProducts";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
@@ -83,7 +83,8 @@ const cardStagger = {
 
 export default function Landing() {
   const { t, lang } = useLanguage();
-  const { data: categories } = useCategories();
+  const { data: allCategories } = useCategories();
+  const categories = allCategories ? topLevelCategories(allCategories) : allCategories;
   const { data: featured } = useFeaturedProducts(8);
   const { data: reviews } = useActiveReviews();
   const { shouldReduceEffects } = useMediaFlags();
@@ -127,7 +128,7 @@ export default function Landing() {
         />
 
         <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 pb-20 pt-12 sm:px-6 md:grid-cols-2 md:pb-24 md:pt-16 lg:px-8">
-          <div className="relative z-10">
+          <div className="relative z-10 order-2 md:order-1">
             <motion.span
               initial={{ x: -16 }}
               animate={{ x: 0 }}
@@ -163,50 +164,45 @@ export default function Landing() {
             <div className="mt-10 flex gap-3">
               {(
                 [
-                  { M: DogMascot, bg: "bg-brand/10 border-brand/30" },
-                  { M: CatMascot, bg: "bg-blue/10 border-blue/30" },
-                  { M: BirdMascot, bg: "bg-yellow/20 border-yellow/50" },
-                  { M: FishMascot, bg: "bg-green/10 border-green/30" },
+                  { src: "/images/cat-chiens.webp", label: t("categories.dogs"), ring: "ring-brand/40" },
+                  { src: "/images/cat-chats.webp", label: t("categories.cats"), ring: "ring-blue/40" },
+                  { src: "/images/cat-oiseaux.webp", label: t("categories.birds"), ring: "ring-yellow/50" },
+                  { src: "/images/cat-poissons.webp", label: t("categories.fish"), ring: "ring-green/40" },
                 ] as const
-              ).map(({ M, bg }, i) => (
+              ).map(({ src, label, ring }, i) => (
                 <motion.span
                   key={i}
                   initial={{ y: 20 }}
                   animate={{ y: 0 }}
                   transition={{ delay: 0.2 + i * 0.1, type: "spring", stiffness: 220 }}
                   className={cn(
-                    "flex h-14 w-14 items-center justify-center rounded-2xl border-2 transition-transform hover:-translate-y-1 hover:rotate-6 sm:h-16 sm:w-16",
-                    bg,
+                    "h-14 w-14 overflow-hidden rounded-2xl ring-2 transition-transform hover:-translate-y-1 sm:h-16 sm:w-16",
+                    ring,
                   )}
                 >
-                  <M className="h-10 w-10 sm:h-12 sm:w-12" />
+                  <img src={src} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
                 </motion.span>
               ))}
             </div>
           </div>
 
-          {/* Photo card with mascots peeking around it */}
+          {/* Photo card */}
           <motion.div
             style={shouldReduceEffects ? undefined : { y: photoY }}
-            className="relative mx-auto w-full max-w-lg"
+            className="relative order-1 mx-auto w-full max-w-2xl md:order-2"
           >
-            <div aria-hidden className="absolute -inset-6 rotate-3 rounded-[2.5rem] bg-gradient-to-br from-blue/30 via-yellow/30 to-brand/30" />
-            <TiltCard max={7} className="relative">
-              <div className="rotate-[-2deg] overflow-hidden rounded-[2rem] border-8 border-panel bg-white shadow-2xl transition-transform duration-300 hover:rotate-0">
-                <img
-                  src="/images/hero-pets.webp"
-                  alt={t("hero.title")}
-                  width={1600}
-                  height={893}
-                  loading="eager"
-                  fetchPriority="high"
-                  className="h-auto w-full"
-                />
-              </div>
-            </TiltCard>
-            <DogMascot className="absolute -bottom-10 -start-6 h-24 w-24 drop-shadow-lg sm:h-28 sm:w-28" />
-            <BirdMascot className="anim-float absolute -end-4 -top-10 h-20 w-20 drop-shadow-lg sm:h-24 sm:w-24" />
-            <FishMascot className="anim-bounce-soft absolute -bottom-8 end-10 h-16 w-16 drop-shadow-lg sm:h-20 sm:w-20" />
+            <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25" />
+            <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-2xl">
+              <img
+                src="/images/hero-pets.webp"
+                alt={t("hero.title")}
+                width={1600}
+                height={893}
+                loading="eager"
+                fetchPriority="high"
+                className="h-auto w-full"
+              />
+            </div>
           </motion.div>
         </div>
       </section>
@@ -216,12 +212,12 @@ export default function Landing() {
 
       {/* ================= Trust badges ================= */}
       <section className="relative bg-tint-blue">
-        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-4 px-4 py-14 sm:px-6 lg:grid-cols-4 lg:px-8">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-10 sm:gap-4 sm:px-6 sm:py-14 lg:grid-cols-4 lg:px-8">
           {(
             [
               { Icon: Truck, key: "trust.cod", card: "bg-brand text-brand-ink" },
-              { Icon: BadgeCheck, key: "trust.delivery", card: "bg-blue text-blue-ink" },
-              { Icon: ShieldCheck, key: "trust.quality", card: "bg-green text-green-ink" },
+              { Icon: BadgeCheck, key: "trust.delivery", card: "bg-yellow text-yellow-ink" },
+              { Icon: ShieldCheck, key: "trust.quality", card: "bg-brand text-brand-ink" },
               { Icon: Star, key: "trust.support", card: "bg-yellow text-yellow-ink" },
             ] as const
           ).map(({ Icon, key, card }, i) => (
@@ -233,14 +229,14 @@ export default function Landing() {
               whileInView="show"
               viewport={{ once: true, margin: "-40px" }}
               className={cn(
-                "group flex items-center gap-3 rounded-2xl px-5 py-5 shadow-[0_6px_0_0_rgb(var(--c-ink)/0.12)] transition-transform hover:-translate-y-1 hover:rotate-1",
+                "group flex items-center gap-2 rounded-xl px-3 py-3 shadow-[0_4px_0_0_rgb(var(--c-ink)/0.12)] transition-transform hover:-translate-y-1 hover:rotate-1 sm:gap-3 sm:rounded-2xl sm:px-5 sm:py-5 sm:shadow-[0_6px_0_0_rgb(var(--c-ink)/0.12)]",
                 card,
               )}
             >
-              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/20 transition-transform group-hover:rotate-12">
-                <Icon className="h-6 w-6" strokeWidth={2.2} />
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 transition-transform group-hover:rotate-12 sm:h-12 sm:w-12 sm:rounded-xl">
+                <Icon className="h-4.5 w-4.5 sm:h-7 sm:w-7" strokeWidth={2.2} />
               </span>
-              <span className="text-sm font-extrabold leading-tight">{t(key)}</span>
+              <span className="text-xs font-extrabold leading-tight sm:text-lg">{t(key)}</span>
             </motion.div>
           ))}
         </div>
@@ -375,11 +371,11 @@ export default function Landing() {
 
             {(
               [
-                { M: DogMascot, step: "step1", chip: "bg-brand text-brand-ink", card: "border-brand/30 hover:border-brand bg-brand/5" },
-                { M: CatMascot, step: "step2", chip: "bg-blue text-blue-ink", card: "border-blue/30 hover:border-blue bg-blue/5" },
-                { M: FishMascot, step: "step3", chip: "bg-green text-green-ink", card: "border-green/30 hover:border-green bg-green/5" },
+                { step: "step1", chip: "bg-brand text-brand-ink", card: "border-brand/30 hover:border-brand bg-brand/5" },
+                { step: "step2", chip: "bg-blue text-blue-ink", card: "border-blue/30 hover:border-blue bg-blue/5" },
+                { step: "step3", chip: "bg-green text-green-ink", card: "border-green/30 hover:border-green bg-green/5" },
               ] as const
-            ).map(({ M, step, chip, card }, i) => (
+            ).map(({ step, chip, card }, i) => (
               <motion.div
                 key={step}
                 custom={i}
@@ -388,11 +384,10 @@ export default function Landing() {
                 whileInView="show"
                 viewport={{ once: true, margin: "-40px" }}
                 className={cn(
-                  "relative flex flex-col items-center gap-3 rounded-3xl border-2 p-7 pt-14 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl",
+                  "relative flex flex-col items-center gap-3 rounded-3xl border-2 p-7 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl",
                   card,
                 )}
               >
-                <M className="absolute -top-12 h-24 w-24 drop-shadow-md" />
                 <span
                   className={cn(
                     "flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold shadow-[0_4px_0_0_rgb(var(--c-ink)/0.15)]",
@@ -403,6 +398,51 @@ export default function Landing() {
                 </span>
                 <h3 className="font-display text-lg font-extrabold text-ink">{t(`how.${step}.title`)}</h3>
                 <p className="text-sm text-muted">{t(`how.${step}.desc`)}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+        <WaveDivider className="text-bg" />
+      </section>
+
+      {/* ================= Certifications ================= */}
+      <section className="bg-tint-green relative">
+        <div className="relative mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+          <SectionHeading
+            tone="green"
+            kicker={<ShieldCheck className="inline h-3.5 w-3.5" />}
+            title={t("certifications.title")}
+            subtitle={t("certifications.subtitle")}
+          />
+          <div className="mt-10 grid gap-6 sm:grid-cols-2">
+            {(
+              [
+                { src: "/certificate1.jpeg", label: "UNATO" },
+                { src: "/certificate2.png", label: "LGA" },
+              ] as const
+            ).map(({ src, label }, i) => (
+              <motion.div
+                key={label}
+                custom={i}
+                variants={cardStagger}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, margin: "-40px" }}
+                className="group rounded-3xl border-2 border-line bg-panel p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+              >
+                <div className="flex items-center justify-center overflow-hidden rounded-2xl bg-white p-6">
+                  <img
+                    src={src}
+                    alt={label}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-40 w-full object-contain"
+                  />
+                </div>
+                <div className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-ink">
+                  <BadgeCheck className="h-4 w-4 text-green" />
+                  {label}
+                </div>
               </motion.div>
             ))}
           </div>
@@ -463,8 +503,6 @@ export default function Landing() {
       <section className="px-4 pb-20 pt-6 sm:px-6 lg:px-8">
         <div className="bg-cta-gradient relative mx-auto max-w-6xl overflow-hidden rounded-[2.5rem] px-6 py-14 text-center shadow-2xl sm:px-12 sm:py-16">
           <PawScatter count={6} className="text-white" />
-          <BirdMascot className="anim-float absolute -start-4 top-6 hidden h-28 w-28 opacity-90 lg:block" />
-          <DogMascot className="anim-bounce-soft absolute -end-4 bottom-4 hidden h-32 w-32 opacity-90 lg:block" />
           <div className="relative">
             <h2 className="font-display text-3xl font-extrabold text-white drop-shadow sm:text-4xl">
               {t("cta.title")}

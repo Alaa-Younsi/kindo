@@ -28,6 +28,7 @@ export interface Category {
   description_ar: string | null;
   image_url: string | null;
   sort_order: number;
+  parent_id: string | null;
   created_at: string;
 }
 

@@ -5,9 +5,9 @@ import { useGuestOrder } from "@/hooks/useOrders";
 import { Button } from "@/components/ui/Button";
 import { DogMascot } from "@/components/effects/mascots";
 import { Paw } from "@/components/effects/PawScatter";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
-import { formatPrice } from "@/lib/format";
 
 /* One-shot celebratory paw confetti — pops in with the page, stays put. */
 const CONFETTI = [
@@ -73,7 +73,7 @@ export default function OrderConfirmation() {
                     <span className="text-muted">x{item.quantity}</span>
                     {specLine && <span className="block text-xs font-normal text-muted">{specLine}</span>}
                   </span>
-                  <span className="text-sm font-extrabold">{formatPrice(item.price * item.quantity)}</span>
+                  <Price value={item.price * item.quantity} className="text-sm font-extrabold" />
                 </li>
               );
             })}
@@ -81,23 +81,23 @@ export default function OrderConfirmation() {
           <div className="mt-3 space-y-1 border-t-2 border-line pt-3 text-sm">
             <div className="flex justify-between">
               <span className="text-muted">{t("checkout.subtotal")}</span>
-              <span className="font-bold">{formatPrice(order.subtotal)}</span>
+              <Price value={order.subtotal} className="font-bold" />
             </div>
             {order.discount > 0 && (
               <div className="flex justify-between">
                 <span className="text-muted">{t("checkout.discount")}</span>
-                <span className="font-bold text-green">-{formatPrice(order.discount)}</span>
+                <Price value={order.discount} prefix="-" className="font-bold text-green" />
               </div>
             )}
             <div className="flex justify-between">
               <span className="text-muted">{t("checkout.shipping")}</span>
               <span className="font-bold">
-                {order.shipping === 0 ? t("checkout.shippingFree") : formatPrice(order.shipping)}
+                {order.shipping === 0 ? t("checkout.shippingFree") : <Price value={order.shipping} />}
               </span>
             </div>
             <div className="flex justify-between text-base">
               <span className="font-extrabold">{t("checkout.total")}</span>
-              <span className="font-extrabold text-brand">{formatPrice(order.total)}</span>
+              <Price value={order.total} className="font-extrabold text-brand" />
             </div>
           </div>
           <p className="mt-4 text-xs text-muted">

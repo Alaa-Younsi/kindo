@@ -5,12 +5,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useDeliveryPrices, useStoreSettings, resolveShipping, wilayaFeeFor } from "@/hooks/useStoreSettings";
 import { usePlaceOrder } from "@/hooks/useOrders";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
-import { formatPrice } from "@/lib/format";
 import { lineTotal } from "@/lib/offers";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
@@ -144,29 +144,33 @@ export function InlineCheckout({ product, color, size, variants, quantity }: Inl
       <div className="rounded-xl bg-panel-2 p-4 text-sm">
         <div className="flex justify-between">
           <span className="text-muted">{t("checkout.subtotal")}</span>
-          <span className="font-bold">{formatPrice(goodsSubtotal)}</span>
+          <Price value={goodsSubtotal} className="font-bold" />
         </div>
         {goodsAfterDiscount < goodsSubtotal && (
           <div className="flex justify-between">
             <span className="text-muted">{t("checkout.discount")}</span>
-            <span className="font-bold text-green">
-              -{formatPrice(goodsSubtotal - goodsAfterDiscount)}
-            </span>
+            <Price
+              value={goodsSubtotal - goodsAfterDiscount}
+              prefix="-"
+              className="font-bold text-green"
+            />
           </div>
         )}
         <div className="flex justify-between">
           <span className="text-muted">{t("checkout.shipping")}</span>
           <span className="font-bold">
-            {shipping === null
-              ? t("checkout.shippingUnknown")
-              : shipping === 0
-                ? t("checkout.shippingFree")
-                : formatPrice(shipping)}
+            {shipping === null ? (
+              t("checkout.shippingUnknown")
+            ) : shipping === 0 ? (
+              t("checkout.shippingFree")
+            ) : (
+              <Price value={shipping} />
+            )}
           </span>
         </div>
         <div className="mt-2 flex justify-between border-t-2 border-line pt-2 text-base">
           <span className="font-extrabold">{t("checkout.total")}</span>
-          <span className="font-extrabold text-brand">{formatPrice(total)}</span>
+          <Price value={total} className="font-extrabold text-brand" />
         </div>
       </div>
 

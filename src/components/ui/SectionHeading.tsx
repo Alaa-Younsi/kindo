@@ -49,7 +49,7 @@ export function SectionHeading({
       >
         {kicker}
       </span>
-      <h2 className="squiggle mt-3 inline-block w-full font-display text-2xl font-extrabold text-ink sm:text-3xl">
+      <h2 className="mt-3 inline-block w-full font-display text-2xl font-extrabold text-ink sm:text-3xl">
         {title}
       </h2>
       {subtitle && <p className="mx-auto mt-1 max-w-xl text-muted">{subtitle}</p>}

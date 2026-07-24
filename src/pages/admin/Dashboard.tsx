@@ -3,8 +3,9 @@ import { Link } from "react-router-dom";
 import { Package, Receipt, TrendingUp, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { BentoPanel } from "@/components/ui/BentoPanel";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate, formatPrice } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { Order } from "@/types/db";
 
 function useDashboardStats() {
@@ -43,15 +44,10 @@ export default function Dashboard() {
   const { data, isLoading } = useDashboardStats();
 
   const cards = [
-    { key: "admin.dashboard.totalOrders", value: data?.totalOrders, Icon: Receipt, accent: "blue" },
-    { key: "admin.dashboard.pendingOrders", value: data?.pendingOrders, Icon: Clock, accent: "yellow" },
-    { key: "admin.dashboard.products", value: data?.activeProducts, Icon: Package, accent: "green" },
-    {
-      key: "admin.dashboard.revenue",
-      value: data ? formatPrice(data.revenue) : undefined,
-      Icon: TrendingUp,
-      accent: "brand",
-    },
+    { key: "admin.dashboard.totalOrders", value: data?.totalOrders, Icon: Receipt, accent: "blue", isPrice: false },
+    { key: "admin.dashboard.pendingOrders", value: data?.pendingOrders, Icon: Clock, accent: "yellow", isPrice: false },
+    { key: "admin.dashboard.products", value: data?.activeProducts, Icon: Package, accent: "green", isPrice: false },
+    { key: "admin.dashboard.revenue", value: data?.revenue, Icon: TrendingUp, accent: "brand", isPrice: true },
   ] as const;
 
   return (
@@ -59,11 +55,11 @@ export default function Dashboard() {
       <h1 className="font-display text-2xl font-extrabold text-ink">{t("admin.dashboard.title")}</h1>
 
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        {cards.map(({ key, value, Icon, accent }) => (
+        {cards.map(({ key, value, Icon, accent, isPrice }) => (
           <BentoPanel key={key} accent={accent}>
             <Icon className="h-6 w-6 text-muted" />
             <p className="mt-3 text-2xl font-extrabold text-ink">
-              {isLoading ? "…" : (value ?? 0)}
+              {isLoading ? "…" : isPrice ? <Price value={value ?? 0} /> : (value ?? 0)}
             </p>
             <p className="mt-1 text-sm text-muted">{t(key)}</p>
           </BentoPanel>
@@ -94,7 +90,9 @@ export default function Dashboard() {
                     </Link>
                   </td>
                   <td className="px-4 py-3">{order.customer_name}</td>
-                  <td className="px-4 py-3 font-bold">{formatPrice(order.total)}</td>
+                  <td className="px-4 py-3 font-bold">
+                    <Price value={order.total} />
+                  </td>
                   <td className="px-4 py-3">{t(`admin.orders.status.${order.status}`)}</td>
                   <td className="px-4 py-3 text-muted">{formatDate(order.created_at, lang)}</td>
                 </tr>

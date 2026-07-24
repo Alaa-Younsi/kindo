@@ -2,15 +2,15 @@ import { Paw } from "./PawScatter";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import type { TranslationKey } from "@/i18n/translations";
 
-const ITEMS: Array<{ key: TranslationKey; color: string }> = [
-  { key: "trust.cod", color: "text-yellow" },
-  { key: "categories.dogs", color: "text-blue-ink/90" },
-  { key: "trust.delivery", color: "text-yellow" },
-  { key: "categories.cats", color: "text-blue-ink/90" },
-  { key: "trust.quality", color: "text-yellow" },
-  { key: "categories.birds", color: "text-blue-ink/90" },
-  { key: "trust.support", color: "text-yellow" },
-  { key: "categories.fish", color: "text-blue-ink/90" },
+const ITEMS: TranslationKey[] = [
+  "trust.cod",
+  "categories.dogs",
+  "trust.delivery",
+  "categories.cats",
+  "trust.quality",
+  "categories.birds",
+  "trust.support",
+  "categories.fish",
 ];
 
 /**
@@ -22,9 +22,12 @@ export function Marquee() {
   const { t } = useLanguage();
   const row = (ariaHidden: boolean) => (
     <div className="flex shrink-0 items-center" aria-hidden={ariaHidden}>
-      {ITEMS.map(({ key, color }, i) => (
-        <span key={`${key}-${i}`} className={`flex items-center gap-3 px-6 text-sm font-extrabold uppercase tracking-wider ${color}`}>
-          <Paw className="h-4 w-4 text-yellow/80" />
+      {ITEMS.map((key, i) => (
+        <span
+          key={`${key}-${i}`}
+          className="mx-1.5 flex items-center gap-2 rounded-full border-2 border-panel bg-panel px-5 py-2 text-base font-extrabold uppercase tracking-wide text-ink"
+        >
+          <Paw className="h-4 w-4 opacity-60" />
           {t(key)}
         </span>
       ))}
@@ -32,7 +35,7 @@ export function Marquee() {
   );
 
   return (
-    <div dir="ltr" className="relative z-10 -rotate-1 overflow-hidden bg-blue py-3 shadow-lg">
+    <div dir="ltr" className="relative z-10 overflow-hidden bg-ink py-3 shadow-lg">
       <div className="marquee-track">
         {row(false)}
         {row(true)}

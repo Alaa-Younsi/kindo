@@ -1,22 +1,18 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search } from "lucide-react";
+import { Search, SlidersHorizontal } from "lucide-react";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ShopFilters } from "@/components/shop/ShopFilters";
+import { Drawer } from "@/components/ui/Drawer";
 import { CatMascot } from "@/components/effects/mascots";
 import { Paw } from "@/components/effects/PawScatter";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
-import { useProducts } from "@/hooks/useProducts";
+import { topLevelCategories } from "@/lib/categories";
+import { useProducts, usePriceBounds } from "@/hooks/useProducts";
 import { useSeo } from "@/hooks/useSeo";
 import { localize } from "@/lib/format";
 import { cn } from "@/lib/utils";
-
-const CHIP_TONES = [
-  "border-brand/40 text-brand hover:bg-brand/10 data-[active=true]:bg-brand data-[active=true]:text-brand-ink data-[active=true]:border-brand",
-  "border-blue/40 text-blue hover:bg-blue/10 data-[active=true]:bg-blue data-[active=true]:text-blue-ink data-[active=true]:border-blue",
-  "border-green/40 text-green hover:bg-green/10 data-[active=true]:bg-green data-[active=true]:text-green-ink data-[active=true]:border-green",
-  "border-yellow/60 text-yellow hover:bg-yellow/20 data-[active=true]:bg-yellow data-[active=true]:text-yellow-ink data-[active=true]:border-yellow",
-] as const;
 
 function SkeletonCard() {
   return (
@@ -33,14 +29,53 @@ function SkeletonCard() {
 export default function Shop() {
   const { t, lang } = useLanguage();
   const [searchParams, setSearchParams] = useSearchParams();
-  const categorySlug = searchParams.get("category") ?? "";
+  const categoriesParam = searchParams.get("categories") ?? "";
+  const selectedSlugs = categoriesParam ? categoriesParam.split(",").filter(Boolean) : [];
   const initialQuery = searchParams.get("q") ?? "";
   const [searchInput, setSearchInput] = useState(initialQuery);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
-  const { data: categories } = useCategories();
+  const { data: allCategories } = useCategories();
+  const categories = allCategories ? topLevelCategories(allCategories) : allCategories;
+  const { data: priceBounds } = usePriceBounds();
+  const bounds = priceBounds ?? { min: 0, max: 10000 };
+
+  const minPriceParam = searchParams.get("minPrice");
+  const maxPriceParam = searchParams.get("maxPrice");
+  const [priceValue, setPriceValue] = useState<[number, number]>([
+    minPriceParam ? Number(minPriceParam) : bounds.min,
+    maxPriceParam ? Number(maxPriceParam) : bounds.max,
+  ]);
+
+  // Seed the slider from real bounds once they load, unless the URL already pins a range.
+  useEffect(() => {
+    if (!priceBounds || minPriceParam || maxPriceParam) return;
+    setPriceValue([priceBounds.min, priceBounds.max]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceBounds]);
+
+  // Debounce writing the slider's live value into the URL so dragging doesn't refetch every pixel.
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      const next = new URLSearchParams(searchParams);
+      if (priceValue[0] <= bounds.min && priceValue[1] >= bounds.max) {
+        next.delete("minPrice");
+        next.delete("maxPrice");
+      } else {
+        next.set("minPrice", String(priceValue[0]));
+        next.set("maxPrice", String(priceValue[1]));
+      }
+      setSearchParams(next, { replace: true });
+    }, 400);
+    return () => clearTimeout(handle);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [priceValue]);
+
   const { data: products, isLoading } = useProducts({
-    categorySlug: categorySlug || null,
+    categorySlugs: selectedSlugs.length > 0 ? selectedSlugs : undefined,
     search: initialQuery,
+    minPrice: minPriceParam ? Number(minPriceParam) : undefined,
+    maxPrice: maxPriceParam ? Number(maxPriceParam) : undefined,
   });
 
   useSeo({
@@ -48,10 +83,37 @@ export default function Shop() {
     description: t("hero.subtitle"),
   });
 
-  const handleCategoryChange = (slug: string) => {
+  const setSelectedSlugs = (slugs: string[]) => {
     const next = new URLSearchParams(searchParams);
-    if (slug) next.set("category", slug);
-    else next.delete("category");
+    if (slugs.length > 0) next.set("categories", slugs.join(","));
+    else next.delete("categories");
+    setSearchParams(next);
+  };
+
+  const handlePillClick = (slug: string) => {
+    if (slug === "") {
+      setSelectedSlugs([]);
+    } else if (selectedSlugs.length === 1 && selectedSlugs[0] === slug) {
+      setSelectedSlugs([]);
+    } else {
+      setSelectedSlugs([slug]);
+    }
+  };
+
+  const handleToggleSlug = (slug: string) => {
+    if (selectedSlugs.includes(slug)) {
+      setSelectedSlugs(selectedSlugs.filter((s) => s !== slug));
+    } else {
+      setSelectedSlugs([...selectedSlugs, slug]);
+    }
+  };
+
+  const handleResetFilters = () => {
+    setPriceValue([bounds.min, bounds.max]);
+    const next = new URLSearchParams(searchParams);
+    next.delete("categories");
+    next.delete("minPrice");
+    next.delete("maxPrice");
     setSearchParams(next);
   };
 
@@ -63,12 +125,28 @@ export default function Shop() {
     setSearchParams(next);
   };
 
+  const pillClass = (active: boolean) =>
+    cn(
+      "shrink-0 rounded-full border-2 px-4 py-1.5 text-sm font-extrabold transition-all hover:-translate-y-0.5",
+      active ? "border-ink bg-ink text-bg" : "border-line bg-panel text-ink hover:border-ink",
+    );
+
+  const filtersPanel = (
+    <ShopFilters
+      categories={categories}
+      selectedSlugs={selectedSlugs}
+      onToggleSlug={handleToggleSlug}
+      priceBounds={bounds}
+      priceValue={priceValue}
+      onPriceChange={setPriceValue}
+      onReset={handleResetFilters}
+    />
+  );
+
   return (
     <div className="bg-tint-blue">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 className="squiggle inline-block font-display text-3xl font-extrabold text-ink">
-          {t("shop.title")}
-        </h1>
+        <h1 className="inline-block font-display text-3xl font-extrabold text-ink">{t("shop.title")}</h1>
 
         <form onSubmit={handleSearchSubmit} className="mt-6 max-w-xl">
           <div className="relative">
@@ -89,56 +167,72 @@ export default function Shop() {
           </div>
         </form>
 
-        {/* Category chips */}
-        <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+        {/* Category pills */}
+        <div className="no-scrollbar mt-5 flex gap-2 overflow-x-auto pb-2">
           <button
-            data-active={categorySlug === ""}
-            onClick={() => handleCategoryChange("")}
-            className="shrink-0 rounded-full border-2 border-line bg-panel px-4 py-1.5 text-sm font-extrabold text-ink transition-all hover:-translate-y-0.5 data-[active=true]:border-ink data-[active=true]:bg-ink data-[active=true]:text-bg"
+            data-active={selectedSlugs.length === 0}
+            onClick={() => handlePillClick("")}
+            className={pillClass(selectedSlugs.length === 0)}
           >
             {t("shop.filter.all")}
           </button>
-          {categories?.map((cat, i) => (
+          {categories?.map((cat) => (
             <button
               key={cat.id}
-              data-active={categorySlug === cat.slug}
-              onClick={() => handleCategoryChange(cat.slug)}
-              className={cn(
-                "shrink-0 rounded-full border-2 bg-panel px-4 py-1.5 text-sm font-extrabold transition-all hover:-translate-y-0.5",
-                CHIP_TONES[i % CHIP_TONES.length],
-              )}
+              onClick={() => handlePillClick(cat.slug)}
+              className={pillClass(selectedSlugs.length === 1 && selectedSlugs[0] === cat.slug)}
             >
               {localize(cat, "name", lang)}
             </button>
           ))}
         </div>
 
+        <button
+          onClick={() => setFiltersOpen(true)}
+          className="mt-2 flex items-center gap-2 rounded-full border-2 border-line bg-panel px-4 py-1.5 text-sm font-extrabold text-ink transition-colors hover:border-ink lg:hidden"
+        >
+          <SlidersHorizontal className="h-4 w-4" />
+          {t("shop.filter.title")}
+        </button>
+
         <p className="mt-4 flex items-center gap-2 text-sm font-bold text-muted">
           <Paw className="h-4 w-4 text-brand/50" />
           {isLoading ? t("common.loading") : `${products?.length ?? 0} ${t("shop.results")}`}
         </p>
 
-        {isLoading ? (
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <SkeletonCard key={i} />
-            ))}
+        <div className="mt-6 grid gap-8 lg:grid-cols-[260px_1fr]">
+          <aside className="hidden lg:block">
+            <div className="sticky top-24">{filtersPanel}</div>
+          </aside>
+
+          <div>
+            {isLoading ? (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 xl:grid-cols-4">
+                {Array.from({ length: 8 }).map((_, i) => (
+                  <SkeletonCard key={i} />
+                ))}
+              </div>
+            ) : products && products.length === 0 ? (
+              <div className="flex flex-col items-center gap-4 py-16 text-center">
+                <span className="flex h-36 w-36 items-center justify-center rounded-full bg-yellow/15">
+                  <CatMascot className="h-28 w-28" />
+                </span>
+                <p className="font-bold text-muted">{t("shop.empty")}</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 xl:grid-cols-4">
+                {products?.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
           </div>
-        ) : products && products.length === 0 ? (
-          <div className="flex flex-col items-center gap-4 py-16 text-center">
-            <span className="flex h-36 w-36 items-center justify-center rounded-full bg-yellow/15">
-              <CatMascot className="h-28 w-28" />
-            </span>
-            <p className="font-bold text-muted">{t("shop.empty")}</p>
-          </div>
-        ) : (
-          <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4">
-            {products?.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
+        </div>
       </div>
+
+      <Drawer open={filtersOpen} onClose={() => setFiltersOpen(false)} side="left" title={t("shop.filter.title")}>
+        <div className="p-4">{filtersPanel}</div>
+      </Drawer>
     </div>
   );
 }

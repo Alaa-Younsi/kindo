@@ -1,15 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ImageOff, ShoppingBag } from "lucide-react";
+import { ImageOff } from "lucide-react";
+import { ShoppingBagIcon } from "@/components/icons/ShoppingBagIcon";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/product/ProductCard";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
 import { Paw } from "@/components/effects/PawScatter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
-import { formatPrice, localize } from "@/lib/format";
+import { localize } from "@/lib/format";
 import { discountPercent } from "@/lib/offers";
 import { useCartStore } from "@/store/cart";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
@@ -127,9 +129,9 @@ export default function ProductPage() {
           <div className="relative">
             <div
               aria-hidden
-              className="absolute -inset-3 rotate-2 rounded-[2rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25"
+              className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25"
             />
-            <div className="relative aspect-square overflow-hidden rounded-3xl border-2 border-line bg-panel-2">
+            <div className="relative aspect-square overflow-hidden rounded-3xl bg-panel-2 shadow-xl">
               {images[activeImage] ? (
                 <img
                   src={images[activeImage].url}
@@ -187,12 +189,13 @@ export default function ProductPage() {
           </h1>
 
           <div className="mt-3 flex items-center gap-3">
-            <span className="text-2xl font-extrabold text-brand">{formatPrice(product.price)}</span>
+            <Price value={product.price} className="text-2xl font-extrabold text-brand" />
             {discount && (
               <>
-                <span className="text-base text-muted line-through">
-                  {formatPrice(product.compare_at_price!)}
-                </span>
+                <Price
+                  value={product.compare_at_price!}
+                  className="text-base text-muted line-through"
+                />
                 <Badge tone="brand">-{discount}%</Badge>
               </>
             )}
@@ -291,7 +294,7 @@ export default function ProductPage() {
           {!isOut && (
             <div className="mt-6 flex gap-3">
               <Button variant="blue" size="lg" onClick={handleAddToCart} className="fx-paw-sweep flex-1 gap-2 hover:-rotate-1">
-                <ShoppingBag className="h-4 w-4" />
+                <ShoppingBagIcon className="h-4 w-4" />
                 {t("product.addToCart")}
               </Button>
             </div>

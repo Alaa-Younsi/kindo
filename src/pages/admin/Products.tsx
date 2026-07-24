@@ -3,8 +3,9 @@ import { Plus } from "lucide-react";
 import { useAdminProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatPrice, localize } from "@/lib/format";
+import { localize } from "@/lib/format";
 
 export default function AdminProducts() {
   const { t, lang } = useLanguage();
@@ -56,7 +57,9 @@ export default function AdminProducts() {
                       {localize(product, "name", lang)}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 font-bold">{formatPrice(product.price)}</td>
+                  <td className="px-4 py-3 font-bold">
+                    <Price value={product.price} />
+                  </td>
                   <td className="px-4 py-3">{product.stock}</td>
                   <td className="px-4 py-3">
                     <Badge tone={product.status === "active" ? "green" : "neutral"}>

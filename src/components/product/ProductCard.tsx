@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ImageOff, ShoppingBag } from "lucide-react";
+import { ImageOff } from "lucide-react";
+import { ShoppingBagIcon } from "@/components/icons/ShoppingBagIcon";
 import { TiltCard } from "@/components/effects/TiltCard";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatPrice, localize } from "@/lib/format";
+import { localize } from "@/lib/format";
 import { discountPercent } from "@/lib/offers";
 import { Badge } from "@/components/ui/Badge";
+import { Price } from "@/components/ui/Price";
 import { useCartStore } from "@/store/cart";
 import { trackAddToCart } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
@@ -102,7 +104,7 @@ export function ProductCard({ product }: { product: Product }) {
               aria-label={t("product.addToCart")}
               className="absolute bottom-2 end-2 flex h-11 w-11 items-center justify-center rounded-full bg-green text-green-ink opacity-0 shadow-lg transition-all duration-200 hover:rotate-12 hover:brightness-105 group-hover:opacity-100"
             >
-              <ShoppingBag className="h-4.5 w-4.5" />
+              <ShoppingBagIcon className="h-4.5 w-4.5" />
             </motion.button>
           )}
         </div>
@@ -112,13 +114,12 @@ export function ProductCard({ product }: { product: Product }) {
             {localize(product, "name", lang)}
           </h3>
           <div className="mt-auto flex items-center gap-2 pt-2">
-            <span className="rounded-lg bg-brand/10 px-2 py-0.5 text-base font-extrabold text-brand">
-              {formatPrice(product.price)}
-            </span>
+            <Price
+              value={product.price}
+              className="rounded-lg bg-brand/10 px-2 py-0.5 text-base font-extrabold text-brand"
+            />
             {product.compare_at_price && product.compare_at_price > product.price && (
-              <span className="text-xs text-muted line-through">
-                {formatPrice(product.compare_at_price)}
-              </span>
+              <Price value={product.compare_at_price} className="text-xs text-muted line-through" />
             )}
           </div>
         </div>
