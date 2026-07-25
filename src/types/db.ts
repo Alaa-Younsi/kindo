@@ -3,6 +3,13 @@ export type DeliveryType = "home" | "office";
 export type ProductStatus = "active" | "draft";
 export type Lang = "fr" | "ar";
 
+export interface ProductColor {
+  label_fr: string;
+  label_ar: string;
+  hex: string;
+  image_url?: string | null;
+}
+
 export interface VariantGroup {
   name_fr: string;
   name_ar: string;
@@ -54,7 +61,7 @@ export interface Product {
   category_id: string | null;
   stock: number;
   style_code: string | null;
-  colors: string[];
+  colors: ProductColor[];
   sizes: string[];
   variants: VariantGroup[];
   quantity_offers: QuantityOffer[];

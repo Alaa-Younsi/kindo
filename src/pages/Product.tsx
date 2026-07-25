@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ImageOff } from "lucide-react";
 import { ShoppingBagIcon } from "@/components/icons/ShoppingBagIcon";
 import { useProduct, useRelatedProducts } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/product/ProductCard";
 import { InlineCheckout } from "@/components/product/InlineCheckout";
+import { Gallery, type GalleryImage } from "@/components/product/Gallery";
 import { Paw } from "@/components/effects/PawScatter";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +15,7 @@ import { localize } from "@/lib/format";
 import { discountPercent } from "@/lib/offers";
 import { useCartStore } from "@/store/cart";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
+import type { ProductColor } from "@/types/db";
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -87,6 +88,29 @@ export default function ProductPage() {
   const isOut = product.stock <= 0;
   const lowStock = product.stock > 0 && product.stock <= 5;
 
+  // Real product_images come first — images[0] stays what gets snapshotted
+  // into the cart/order, never a colour photo. Colour photos that don't
+  // already duplicate a base image are appended after.
+  const galleryImages: GalleryImage[] = (() => {
+    const base: GalleryImage[] = images.map((img) => ({ key: img.id, url: img.url, alt: img.alt }));
+    const seen = new Set(base.map((g) => g.url));
+    const colorImages: GalleryImage[] = [];
+    for (const c of product.colors) {
+      if (!c.image_url || seen.has(c.image_url)) continue;
+      seen.add(c.image_url);
+      colorImages.push({ key: `color-${c.hex}-${c.label_fr}`, url: c.image_url, alt: localize(c, "label", lang) });
+    }
+    return [...base, ...colorImages];
+  })();
+
+  const handleColorSelect = (c: ProductColor) => {
+    const label = localize(c, "label", lang);
+    setColor(label);
+    if (!c.image_url) return;
+    const idx = galleryImages.findIndex((g) => g.url === c.image_url);
+    if (idx >= 0) setActiveImage(idx);
+  };
+
   const selectedVariants = product.variants
     .filter((group) => variantPicks[group.name_fr])
     .map((group) => ({
@@ -126,50 +150,7 @@ export default function ProductPage() {
       <div className="grid gap-10 lg:grid-cols-2">
         {/* Gallery */}
         <div>
-          <div className="relative">
-            <div
-              aria-hidden
-              className="absolute -inset-3 rounded-[2rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25"
-            />
-            <div className="relative aspect-square overflow-hidden rounded-3xl bg-panel-2 shadow-xl">
-              {images[activeImage] ? (
-                <img
-                  src={images[activeImage].url}
-                  alt={images[activeImage].alt ?? localize(product, "name", lang)}
-                  width={600}
-                  height={600}
-                  loading="eager"
-                  fetchPriority="high"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center text-line">
-                  <ImageOff className="h-16 w-16" />
-                </div>
-              )}
-            </div>
-          </div>
-          {images.length > 1 && (
-            <div className="mt-5 flex gap-2 overflow-x-auto">
-              {images.map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setActiveImage(i)}
-                  className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all hover:-translate-y-0.5 ${i === activeImage ? "border-brand ring-2 ring-brand/30" : "border-line"}`}
-                >
-                  <img
-                    src={img.url}
-                    alt=""
-                    width={64}
-                    height={64}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-full w-full object-cover"
-                  />
-                </button>
-              ))}
-            </div>
-          )}
+          <Gallery images={galleryImages} activeIndex={activeImage} onActiveChange={setActiveImage} />
 
           {product.video_url && (
             <video
@@ -220,16 +201,28 @@ export default function ProductPage() {
           {product.colors.length > 0 && (
             <div className="mt-5">
               <p className="mb-2 text-sm font-bold text-ink">{t("product.color")}</p>
-              <div className="flex flex-wrap gap-2">
-                {product.colors.map((c) => (
-                  <button
-                    key={c}
-                    onClick={() => setColor(c)}
-                    className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold ${color === c ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
-                  >
-                    {c}
-                  </button>
-                ))}
+              <div className="flex flex-wrap gap-3">
+                {product.colors.map((c) => {
+                  const label = localize(c, "label", lang);
+                  const isActive = color === label;
+                  return (
+                    <button
+                      key={`${c.hex}-${label}`}
+                      type="button"
+                      onClick={() => handleColorSelect(c)}
+                      title={label}
+                      aria-label={label}
+                      aria-pressed={isActive}
+                      className={`relative h-9 w-9 shrink-0 rounded-full border-2 transition-transform hover:scale-110 ${isActive ? "border-brand ring-2 ring-brand/30" : "border-line"}`}
+                    >
+                      <span
+                        aria-hidden
+                        className="absolute inset-1 rounded-full shadow-inner"
+                        style={{ backgroundColor: c.hex || "#a1a1aa" }}
+                      />
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

@@ -1,4 +1,4 @@
-import type { VariantGroup } from "@/types/db";
+import type { ProductColor, VariantGroup } from "@/types/db";
 
 export function cn(...classes: Array<string | false | null | undefined>): string {
   return classes.filter(Boolean).join(" ");
@@ -8,6 +8,19 @@ export function cn(...classes: Array<string | false | null | undefined>): string
  *  storefront as a nameless/empty picker — filter before writing. */
 export function sanitizeVariantGroups(groups: VariantGroup[]): VariantGroup[] {
   return groups.filter((g) => g.name_fr.trim() && g.values.length > 0);
+}
+
+/** Drop colour rows the admin never named, and normalize a missing hex —
+ *  never write a nameless swatch or invalid hex to the storefront. */
+export function sanitizeColors(colors: ProductColor[]): ProductColor[] {
+  return colors
+    .filter((c) => c.label_fr.trim())
+    .map((c) => ({
+      label_fr: c.label_fr.trim(),
+      label_ar: c.label_ar.trim() || c.label_fr.trim(),
+      hex: /^#[0-9a-fA-F]{6}$/.test(c.hex) ? c.hex : "#a1a1aa",
+      image_url: c.image_url || null,
+    }));
 }
 
 export function slugify(input: string): string {

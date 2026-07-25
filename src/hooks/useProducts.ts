@@ -1,9 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { sanitizeSearchTerm } from "@/lib/utils";
-import type { Product } from "@/types/db";
+import type { Product, ProductColor } from "@/types/db";
 
 const PRODUCT_SELECT = "*, product_images(*), categories(*)";
+
+// Older rows (pre-object-colors) stored `colors` as plain strings — lift
+// those into the { label_fr, label_ar, hex } shape so every consumer can
+// trust the object form instead of crashing on `color.hex`.
+function normalizeColors(colors: unknown): ProductColor[] {
+  if (!Array.isArray(colors)) return [];
+  return colors.map((c) =>
+    typeof c === "string" ? { label_fr: c, label_ar: c, hex: "#a1a1aa" } : (c as ProductColor),
+  );
+}
 
 // A DB that hasn't run the variants/offers migration yet returns rows
 // without those columns — normalize once here so every consumer can trust
@@ -13,6 +23,7 @@ function normalizeProduct(product: Product): Product {
     ...product,
     variants: product.variants ?? [],
     quantity_offers: product.quantity_offers ?? [],
+    colors: normalizeColors(product.colors),
   };
 }
 

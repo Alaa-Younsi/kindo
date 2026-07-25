@@ -11,11 +11,12 @@ import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { CustomVariantsEditor } from "@/components/admin/CustomVariantsEditor";
 import { OffersEditor } from "@/components/admin/OffersEditor";
+import { ColorsEditor } from "@/components/admin/ColorsEditor";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { slugify, uniqueSlug, sanitizeVariantGroups } from "@/lib/utils";
+import { slugify, uniqueSlug, sanitizeVariantGroups, sanitizeColors } from "@/lib/utils";
 import { sanitizeOffers } from "@/lib/offers";
 import { compressImage } from "@/lib/image";
-import type { ProductImage, ProductStatus, QuantityOffer, VariantGroup } from "@/types/db";
+import type { ProductColor, ProductImage, ProductStatus, QuantityOffer, VariantGroup } from "@/types/db";
 
 interface FormState {
   name_fr: string;
@@ -29,7 +30,7 @@ interface FormState {
   category_id: string;
   stock: string;
   style_code: string;
-  colors: string;
+  colors: ProductColor[];
   sizes: string;
   variants: VariantGroup[];
   quantity_offers: QuantityOffer[];
@@ -50,7 +51,7 @@ const EMPTY_FORM: FormState = {
   category_id: "",
   stock: "0",
   style_code: "",
-  colors: "",
+  colors: [],
   sizes: "",
   variants: [],
   quantity_offers: [],
@@ -87,7 +88,7 @@ export default function ProductForm() {
         category_id: existing.category_id ?? "",
         stock: String(existing.stock),
         style_code: existing.style_code ?? "",
-        colors: existing.colors.join(", "),
+        colors: existing.colors,
         sizes: existing.sizes.join(", "),
         variants: existing.variants,
         quantity_offers: existing.quantity_offers,
@@ -113,7 +114,7 @@ export default function ProductForm() {
         category_id: form.category_id || null,
         stock: Number(form.stock),
         style_code: form.style_code || null,
-        colors: form.colors.split(",").map((s) => s.trim()).filter(Boolean),
+        colors: sanitizeColors(form.colors),
         sizes: form.sizes.split(",").map((s) => s.trim()).filter(Boolean),
         variants: sanitizeVariantGroups(form.variants),
         quantity_offers: sanitizeOffers(form.quantity_offers),
@@ -262,11 +263,6 @@ export default function ProductForm() {
         </Select>
 
         <Input
-          placeholder="Couleurs (séparées par virgule)"
-          value={form.colors}
-          onChange={(e) => setForm({ ...form, colors: e.target.value })}
-        />
-        <Input
           placeholder="Tailles (séparées par virgule)"
           value={form.sizes}
           onChange={(e) => setForm({ ...form, sizes: e.target.value })}
@@ -297,6 +293,15 @@ export default function ProductForm() {
           />
           <span className="text-sm font-bold text-ink">Featured</span>
         </label>
+      </div>
+
+      <div className="mt-8">
+        <p className="mb-3 text-sm font-bold text-ink">{t("admin.products.colors")}</p>
+        <ColorsEditor
+          value={form.colors}
+          onChange={(colors) => setForm({ ...form, colors })}
+          productId={isNew ? undefined : id}
+        />
       </div>
 
       <div className="mt-8">
