@@ -37,7 +37,12 @@
     />
     <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
 
-    <link rel="icon" type="image/png" href="/kindo-logo.png" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/favicon.png" />
+
+    <!-- Warm the LCP hero image + header logo so they paint immediately -->
+    <link rel="preload" as="image" href="/logo.png" />
+    <link rel="preload" as="image" href="/images/hero-pets.webp" fetchpriority="high" />
 
     <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -53,7 +58,7 @@
         "@type": "Store",
         "name": "KINDO",
         "url": "%VITE_SITE_URL%/",
-        "logo": "%VITE_SITE_URL%/kindo-logo.png",
+        "logo": "%VITE_SITE_URL%/logo.png",
         "description": "Animalerie en ligne en Algérie : alimentation, accessoires et soins pour chiens, chats, oiseaux et poissons.",
         "areaServed": "Algérie",
         "paymentAccepted": "Cash on delivery"

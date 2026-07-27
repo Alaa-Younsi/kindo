@@ -21,6 +21,8 @@ export const translations = {
       "Nourriture, accessoires et soins pour chiens, chats, oiseaux et poissons — paiement à la livraison, partout en Algérie.",
     "hero.cta.shop": "Découvrir la boutique",
     "hero.cta.categories": "Voir les catégories",
+    "hero.flip.hint": "Tournez la carte",
+    "hero.flip.back": "Un nouvel ami vous attend !",
 
     // Trust badges
     "trust.cod": "Paiement à la livraison",
@@ -274,6 +276,8 @@ export const translations = {
       "أطعمة، إكسسوارات وعناية للكلاب والقطط والطيور والأسماك — الدفع عند الاستلام، في كل الجزائر.",
     "hero.cta.shop": "اكتشف المتجر",
     "hero.cta.categories": "عرض الفئات",
+    "hero.flip.hint": "اقلب البطاقة",
+    "hero.flip.back": "صديق جديد بانتظارك!",
 
     // Trust badges
     "trust.cod": "الدفع عند الاستلام",

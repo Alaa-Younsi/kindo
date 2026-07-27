@@ -15,6 +15,8 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { TiltCard } from "@/components/effects/TiltCard";
+import { WanderingCats } from "@/components/effects/WanderingCats";
+import { HeroFlipCard } from "@/components/effects/HeroFlipCard";
 import { PawScatter, Paw } from "@/components/effects/PawScatter";
 import { WaveDivider } from "@/components/effects/WaveDivider";
 import { Marquee } from "@/components/effects/Marquee";
@@ -98,7 +100,7 @@ export default function Landing() {
   const blobY = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
   useSeo({
-    title: t("brand.name"),
+    title: t("nav.home"),
     description: t("hero.subtitle"),
     jsonLd: {
       "@context": "https://schema.org",
@@ -116,6 +118,7 @@ export default function Landing() {
       {/* ================= Hero ================= */}
       <section ref={heroRef} className="bg-mesh-hero relative overflow-hidden">
         <PawScatter />
+        <WanderingCats count={4} />
         <motion.div
           aria-hidden
           style={shouldReduceEffects ? undefined : { y: blobY }}
@@ -160,29 +163,39 @@ export default function Landing() {
               </a>
             </div>
 
-            {/* animal chips */}
+            {/* animal chips — mirror the 4 main category images (editable in admin) */}
             <div className="mt-10 flex gap-3">
               {(
                 [
-                  { src: "/images/cat-chiens.webp", label: t("categories.dogs"), ring: "ring-brand/40" },
-                  { src: "/images/cat-chats.webp", label: t("categories.cats"), ring: "ring-blue/40" },
-                  { src: "/images/cat-oiseaux.webp", label: t("categories.birds"), ring: "ring-yellow/50" },
-                  { src: "/images/cat-poissons.webp", label: t("categories.fish"), ring: "ring-green/40" },
+                  { slug: "chiens", label: t("categories.dogs"), ring: "ring-brand/40" },
+                  { slug: "chats", label: t("categories.cats"), ring: "ring-blue/40" },
+                  { slug: "oiseaux", label: t("categories.birds"), ring: "ring-yellow/50" },
+                  { slug: "poissons", label: t("categories.fish"), ring: "ring-green/40" },
                 ] as const
-              ).map(({ src, label, ring }, i) => (
-                <motion.span
-                  key={i}
-                  initial={{ y: 20 }}
-                  animate={{ y: 0 }}
-                  transition={{ delay: 0.2 + i * 0.1, type: "spring", stiffness: 220 }}
-                  className={cn(
-                    "h-14 w-14 overflow-hidden rounded-2xl ring-2 transition-transform hover:-translate-y-1 sm:h-16 sm:w-16",
-                    ring,
-                  )}
-                >
-                  <img src={src} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
-                </motion.span>
-              ))}
+              ).map(({ slug, label, ring }, i) => {
+                const cat = categories?.find((c) => c.slug === slug);
+                const src = cat?.image_url ?? CATEGORY_PHOTOS[slug];
+                return (
+                  <motion.div
+                    key={slug}
+                    initial={{ y: 20 }}
+                    animate={{ y: 0 }}
+                    transition={{ delay: 0.2 + i * 0.1, type: "spring", stiffness: 220 }}
+                  >
+                    <Link
+                      to={`/shop?category=${slug}`}
+                      aria-label={label}
+                      title={label}
+                      className={cn(
+                        "block h-14 w-14 overflow-hidden rounded-2xl ring-2 transition-transform hover:-translate-y-1 sm:h-16 sm:w-16",
+                        ring,
+                      )}
+                    >
+                      <img src={src} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                    </Link>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
 
@@ -192,17 +205,7 @@ export default function Landing() {
             className="relative order-1 mx-auto w-full max-w-2xl md:order-2"
           >
             <div aria-hidden className="absolute -inset-6 rounded-[2.5rem] bg-gradient-to-br from-blue/25 via-yellow/25 to-brand/25" />
-            <div className="relative overflow-hidden rounded-[2rem] bg-white shadow-2xl">
-              <img
-                src="/images/hero-pets.webp"
-                alt={t("hero.title")}
-                width={1600}
-                height={893}
-                loading="eager"
-                fetchPriority="high"
-                className="h-auto w-full"
-              />
-            </div>
+            <HeroFlipCard src="/images/hero-pets.webp" alt={t("hero.title")} />
           </motion.div>
         </div>
       </section>
@@ -215,12 +218,12 @@ export default function Landing() {
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-10 sm:gap-4 sm:px-6 sm:py-14 lg:grid-cols-4 lg:px-8">
           {(
             [
-              { Icon: Truck, key: "trust.cod", card: "bg-brand text-brand-ink" },
-              { Icon: BadgeCheck, key: "trust.delivery", card: "bg-yellow text-yellow-ink" },
-              { Icon: ShieldCheck, key: "trust.quality", card: "bg-brand text-brand-ink" },
-              { Icon: Star, key: "trust.support", card: "bg-yellow text-yellow-ink" },
+              { Icon: Truck, key: "trust.cod" },
+              { Icon: BadgeCheck, key: "trust.delivery" },
+              { Icon: ShieldCheck, key: "trust.quality" },
+              { Icon: Star, key: "trust.support" },
             ] as const
-          ).map(({ Icon, key, card }, i) => (
+          ).map(({ Icon, key }, i) => (
             <motion.div
               key={key}
               custom={i}
@@ -228,15 +231,23 @@ export default function Landing() {
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, margin: "-40px" }}
-              className={cn(
-                "group flex items-center gap-2 rounded-xl px-3 py-3 shadow-[0_4px_0_0_rgb(var(--c-ink)/0.12)] transition-transform hover:-translate-y-1 hover:rotate-1 sm:gap-3 sm:rounded-2xl sm:px-5 sm:py-5 sm:shadow-[0_6px_0_0_rgb(var(--c-ink)/0.12)]",
-                card,
-              )}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 transition-transform group-hover:rotate-12 sm:h-12 sm:w-12 sm:rounded-xl">
-                <Icon className="h-4.5 w-4.5 sm:h-7 sm:w-7" strokeWidth={2.2} />
-              </span>
-              <span className="text-xs font-extrabold leading-tight sm:text-lg">{t(key)}</span>
+              <TiltCard max={12} className="h-full">
+                <div className="bg-cta-gradient group flex h-full items-center gap-2 rounded-xl px-3 py-3 text-white shadow-[0_4px_0_0_rgb(var(--c-ink)/0.12)] transition-transform [transform-style:preserve-3d] hover:-translate-y-1 hover:rotate-1 sm:gap-3 sm:rounded-2xl sm:px-5 sm:py-5 sm:shadow-[0_6px_0_0_rgb(var(--c-ink)/0.12)]">
+                  <span
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/20 transition-transform group-hover:rotate-12 sm:h-12 sm:w-12 sm:rounded-xl"
+                    style={{ transform: "translateZ(35px)" }}
+                  >
+                    <Icon className="h-4.5 w-4.5 sm:h-7 sm:w-7" strokeWidth={2.2} />
+                  </span>
+                  <span
+                    className="text-xs font-extrabold leading-tight sm:text-lg"
+                    style={{ transform: "translateZ(20px)" }}
+                  >
+                    {t(key)}
+                  </span>
+                </div>
+              </TiltCard>
             </motion.div>
           ))}
         </div>
@@ -246,6 +257,7 @@ export default function Landing() {
       {/* ================= Categories ================= */}
       <section id="categories" className="bg-tint-yellow relative">
         <PawScatter count={4} />
+        <WanderingCats count={2} />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <SectionHeading
             tone="blue"
@@ -349,6 +361,7 @@ export default function Landing() {
       {/* ================= How it works ================= */}
       <section className="bg-tint-red relative">
         <PawScatter count={4} />
+        <WanderingCats count={2} />
         <div className="relative mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
           <SectionHeading tone="brand" kicker="1 · 2 · 3" title={t("how.title")} />
 
@@ -383,21 +396,27 @@ export default function Landing() {
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, margin: "-40px" }}
-                className={cn(
-                  "relative flex flex-col items-center gap-3 rounded-3xl border-2 p-7 text-center shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl",
-                  card,
-                )}
               >
-                <span
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold shadow-[0_4px_0_0_rgb(var(--c-ink)/0.15)]",
-                    chip,
-                  )}
-                >
-                  {i + 1}
-                </span>
-                <h3 className="font-display text-lg font-extrabold text-ink">{t(`how.${step}.title`)}</h3>
-                <p className="text-sm text-muted">{t(`how.${step}.desc`)}</p>
+                <TiltCard max={10} className="h-full">
+                  <div
+                    className={cn(
+                      "relative flex h-full flex-col items-center gap-3 rounded-3xl border-2 p-7 text-center shadow-sm transition-all [transform-style:preserve-3d] hover:-translate-y-1 hover:shadow-xl",
+                      card,
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "flex h-10 w-10 items-center justify-center rounded-full text-lg font-extrabold shadow-[0_4px_0_0_rgb(var(--c-ink)/0.15)]",
+                        chip,
+                      )}
+                      style={{ transform: "translateZ(40px)" }}
+                    >
+                      {i + 1}
+                    </span>
+                    <h3 className="font-display text-lg font-extrabold text-ink">{t(`how.${step}.title`)}</h3>
+                    <p className="text-sm text-muted">{t(`how.${step}.desc`)}</p>
+                  </div>
+                </TiltCard>
               </motion.div>
             ))}
           </div>
@@ -414,13 +433,21 @@ export default function Landing() {
             title={t("certifications.title")}
             subtitle={t("certifications.subtitle")}
           />
-          <div className="mt-10 grid gap-6 sm:grid-cols-2">
+          <div className="mt-14 grid gap-14 sm:grid-cols-2 sm:gap-10">
             {(
               [
-                { src: "/certificate1.jpeg", label: "UNATO" },
-                { src: "/certificate2.png", label: "LGA" },
+                {
+                  src: "/certificate1.jpeg",
+                  label: "UNATO",
+                  title: "Union Nationale Algérienne des Techniciens d'Oiseaux d'Ornement",
+                },
+                {
+                  src: "/certificate2.png",
+                  label: "LGA",
+                  title: "Laboratoire d'Analyse et Contrôle de Qualité",
+                },
               ] as const
-            ).map(({ src, label }, i) => (
+            ).map(({ src, label, title }, i) => (
               <motion.div
                 key={label}
                 custom={i}
@@ -428,21 +455,43 @@ export default function Landing() {
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true, margin: "-40px" }}
-                className="group rounded-3xl border-2 border-line bg-panel p-5 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
               >
-                <div className="flex items-center justify-center overflow-hidden rounded-2xl bg-white p-6">
-                  <img
-                    src={src}
-                    alt={label}
-                    loading="lazy"
-                    decoding="async"
-                    className="h-40 w-full object-contain"
+               <TiltCard max={10} className="group flex flex-col items-center">
+                {/* medal */}
+                <div className="relative flex justify-center">
+                  {/* ribbon tails hanging behind the disc */}
+                  <span
+                    aria-hidden
+                    className="absolute top-[58%] h-32 w-12 -translate-x-[115%] rotate-[16deg] rounded-b-sm bg-gradient-to-b from-brand to-brand/70 shadow-md [clip-path:polygon(0_0,100%_0,100%_100%,50%_74%,0_100%)]"
                   />
+                  <span
+                    aria-hidden
+                    className="absolute top-[58%] h-32 w-12 translate-x-[15%] -rotate-[16deg] rounded-b-sm bg-gradient-to-b from-brand to-brand/70 shadow-md [clip-path:polygon(0_0,100%_0,100%_100%,50%_74%,0_100%)]"
+                  />
+                  {/* gold outer disc */}
+                  <div className="relative z-10 flex h-56 w-56 items-center justify-center rounded-full bg-[linear-gradient(135deg,#ffe98a_0%,#f5c518_45%,#c8901a_100%)] p-3 shadow-[0_16px_40px_-8px_rgba(0,0,0,0.55)] ring-2 ring-white/30 transition-transform duration-300 group-hover:-translate-y-1.5 group-hover:rotate-3 sm:h-64 sm:w-64">
+                    {/* fluted inner ring — overflow-hidden clips the square logo to the circle */}
+                    <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border-4 border-[#e0a91b]/60 bg-white p-8 shadow-inner">
+                      <img
+                        src={src}
+                        alt={label}
+                        loading="lazy"
+                        decoding="async"
+                        className="max-h-full max-w-full object-contain"
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4 flex items-center justify-center gap-2 text-sm font-extrabold text-ink">
+                {/* label plate */}
+                <div className="relative z-20 -mt-2 flex items-center gap-2 rounded-full border-2 border-yellow/50 bg-panel px-5 py-2 text-sm font-extrabold uppercase tracking-wide text-ink shadow-md">
                   <BadgeCheck className="h-4 w-4 text-green" />
                   {label}
                 </div>
+                {/* full certification name */}
+                <p className="mt-3 max-w-xs text-center text-sm font-bold uppercase leading-snug tracking-wide text-muted">
+                  {title}
+                </p>
+               </TiltCard>
               </motion.div>
             ))}
           </div>
@@ -464,34 +513,39 @@ export default function Landing() {
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true, margin: "-40px" }}
-                  className={cn(
-                    "relative flex flex-col gap-3 rounded-3xl border-2 border-line bg-panel p-6 shadow-md transition-transform hover:rotate-0 hover:shadow-xl",
-                    i % 3 === 0 ? "rotate-[-1.5deg]" : i % 3 === 1 ? "rotate-[1deg]" : "rotate-[-0.5deg]",
-                  )}
                 >
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "absolute -top-3 start-8 h-6 w-16 rotate-[-4deg] rounded-sm opacity-80",
-                      i % 4 === 0 ? "bg-yellow" : i % 4 === 1 ? "bg-blue" : i % 4 === 2 ? "bg-green" : "bg-brand",
-                    )}
-                  />
-                  <div className="flex gap-1">
-                    {Array.from({ length: 5 }).map((_, s) => (
-                      <Star
-                        key={s}
+                  <TiltCard max={9} className="h-full">
+                    <div
+                      className={cn(
+                        "relative flex h-full flex-col gap-3 rounded-3xl border-2 border-line bg-panel p-6 shadow-md transition-transform hover:rotate-0 hover:shadow-xl",
+                        i % 3 === 0 ? "rotate-[-1.5deg]" : i % 3 === 1 ? "rotate-[1deg]" : "rotate-[-0.5deg]",
+                      )}
+                    >
+                      <span
+                        aria-hidden
                         className={cn(
-                          "h-4 w-4",
-                          s < review.stars ? "fill-yellow text-yellow" : "text-line",
+                          "absolute -top-3 start-8 h-6 w-16 rotate-[-4deg] rounded-sm opacity-80",
+                          i % 4 === 0 ? "bg-yellow" : i % 4 === 1 ? "bg-blue" : i % 4 === 2 ? "bg-green" : "bg-brand",
                         )}
                       />
-                    ))}
-                  </div>
-                  <p className="text-sm leading-relaxed text-ink">{review.review_text}</p>
-                  <span className="mt-auto flex items-center gap-2 text-sm font-extrabold text-muted">
-                    <Paw className="h-4 w-4 text-brand/60" />
-                    {review.client_name}
-                  </span>
+                      <div className="flex gap-1">
+                        {Array.from({ length: 5 }).map((_, s) => (
+                          <Star
+                            key={s}
+                            className={cn(
+                              "h-4 w-4",
+                              s < review.stars ? "fill-yellow text-yellow" : "text-line",
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm leading-relaxed text-ink">{review.review_text}</p>
+                      <span className="mt-auto flex items-center gap-2 text-sm font-extrabold text-muted">
+                        <Paw className="h-4 w-4 text-brand/60" />
+                        {review.client_name}
+                      </span>
+                    </div>
+                  </TiltCard>
                 </motion.div>
               ))}
             </div>

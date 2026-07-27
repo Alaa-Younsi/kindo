@@ -199,6 +199,28 @@ input[type="number"]::-webkit-inner-spin-button {
   70% { transform: scale(1.12) rotate(4deg); }
   100% { transform: scale(1) rotate(0deg); }
 }
+/* A cat strolling across a section: walks right, turns, walks back.
+   Transform-only + clipped by the parent's overflow-hidden, so it never
+   creates horizontal scroll. */
+@keyframes kf-stroll {
+  0%   { transform: translateX(-14vw) scaleX(1); }
+  48%  { transform: translateX(110vw) scaleX(1); }
+  50%  { transform: translateX(110vw) scaleX(-1); }
+  98%  { transform: translateX(-14vw) scaleX(-1); }
+  100% { transform: translateX(-14vw) scaleX(1); }
+}
+/* A bird gliding diagonally across a section (paired with the mascot's own
+   wing-flap keyframe). One-directional loop for a natural fly-through. */
+@keyframes kf-fly {
+  0%   { transform: translate(-16vw, 0) scaleX(-1); }
+  100% { transform: translate(116vw, -28px) scaleX(-1); }
+}
+/* Gentle continuous 3D card breathing for idle elements. */
+@keyframes kf-tilt3d {
+  0%, 100% { transform: rotateX(0deg) rotateY(-6deg); }
+  50% { transform: rotateX(4deg) rotateY(6deg); }
+}
+.anim-tilt3d { animation: kf-tilt3d 7s ease-in-out infinite; transform-style: preserve-3d; }
 
 .anim-float { animation: kf-float 5s ease-in-out infinite; }
 .anim-wiggle { animation: kf-wiggle 2.4s ease-in-out infinite; }

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown, Menu, Moon, Search, Sun, X } from "lucide-react";
@@ -21,6 +21,9 @@ const LINK_TONES = [
   "hover:text-blue",
   "hover:text-green",
 ] as const;
+
+/** Accent colors for mega-menu / mobile subcategory group titles. */
+const GROUP_TITLE_TONES = ["text-brand", "text-blue", "text-green"] as const;
 
 function NavLinkItem({
   to,
@@ -60,13 +63,25 @@ function CategoryNavItem({
 }) {
   const [open, setOpen] = useState(false);
   const hasChildren = category.children.length > 0;
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openMenu = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    if (hasChildren) setOpen(true);
+  };
+  // Small grace period so a quick diagonal move toward the panel doesn't close it.
+  const scheduleClose = () => {
+    if (!hasChildren) return;
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), 140);
+  };
+
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => hasChildren && setOpen(true)}
-      onMouseLeave={() => hasChildren && setOpen(false)}
-    >
+    <div className="relative" onMouseEnter={openMenu} onMouseLeave={scheduleClose}>
       <NavLinkItem to={`/shop?categories=${category.slug}`} tone={tone}>
         <span className="inline-flex items-center gap-1">
           {localize(category, "name", lang)}
@@ -75,12 +90,18 @@ function CategoryNavItem({
       </NavLinkItem>
 
       {hasChildren && open && (
-        <div className="absolute start-0 top-full z-40 mt-3 flex gap-8 rounded-2xl border-2 border-line bg-panel p-6 shadow-2xl">
-          {category.children.map((group) => (
-            <div key={group.id} className="min-w-[160px]">
+        // A transparent top padding bridges the gap between link and panel so the
+        // hover area stays continuous (no dead zone that would dismiss the menu).
+        <div className="absolute start-0 top-full z-40 pt-3">
+          <div className="flex gap-8 rounded-2xl border-2 border-line bg-panel p-6 shadow-2xl">
+          {category.children.map((group, gi) => (
+            <div key={group.id} className="min-w-[170px]">
               <Link
                 to={`/shop?categories=${group.slug}`}
-                className="mb-3 block text-xs font-extrabold uppercase tracking-wide text-muted transition-colors hover:text-brand"
+                className={cn(
+                  "mb-3 block border-b-2 border-line pb-1.5 font-display text-base font-extrabold uppercase tracking-wide transition-opacity hover:opacity-70",
+                  GROUP_TITLE_TONES[gi % GROUP_TITLE_TONES.length],
+                )}
               >
                 {localize(group, "name", lang)}
               </Link>
@@ -100,6 +121,7 @@ function CategoryNavItem({
               )}
             </div>
           ))}
+          </div>
         </div>
       )}
     </div>
@@ -140,12 +162,15 @@ function CategoryMobileItem({
 
       {hasChildren && expanded && (
         <div className="ms-3 mt-2 flex flex-col gap-3 border-s-2 border-line ps-3">
-          {category.children.map((group) => (
+          {category.children.map((group, gi) => (
             <div key={group.id}>
               <Link
                 to={`/shop?categories=${group.slug}`}
                 onClick={onNavigate}
-                className="text-xs font-extrabold uppercase tracking-wide text-muted"
+                className={cn(
+                  "font-display text-sm font-extrabold uppercase tracking-wide",
+                  GROUP_TITLE_TONES[gi % GROUP_TITLE_TONES.length],
+                )}
               >
                 {localize(group, "name", lang)}
               </Link>
