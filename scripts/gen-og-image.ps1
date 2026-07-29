@@ -64,7 +64,7 @@ $g.DrawString("KINDO", $wordFont, $whiteBrush, 240, 218)
 # Tagline
 $taglineFont = New-Object System.Drawing.Font("Segoe UI", 30, [System.Drawing.FontStyle]::Regular)
 $mutedBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 200, 200, 206))
-$g.DrawString("Tout pour vos compagnons - Livraison 58 wilayas", $taglineFont, $mutedBrush, 100, 400)
+$g.DrawString("Tout pour vos compagnons - Livraison 69 wilayas", $taglineFont, $mutedBrush, 100, 400)
 
 # Color dots (brand palette)
 $dotY = 470

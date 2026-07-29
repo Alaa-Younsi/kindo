@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { MapPin } from "lucide-react";
+import { Mail, MapPin } from "lucide-react";
 import { Logo } from "./Logo";
 import { Paw } from "@/components/effects/PawScatter";
 import { WaveDivider } from "@/components/effects/WaveDivider";
@@ -126,6 +126,17 @@ export function Footer() {
                   <MapPin className="h-3.5 w-3.5" />
                 </span>
                 <span>Algérie</span>
+              </li>
+              <li>
+                <a
+                  href="mailto:kindoalgerie@gmail.com"
+                  className="group flex items-center gap-2 transition-colors hover:text-blue"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-blue/15 text-blue transition-transform group-hover:-translate-y-0.5">
+                    <Mail className="h-3.5 w-3.5" />
+                  </span>
+                  <span dir="ltr">kindoalgerie@gmail.com</span>
+                </a>
               </li>
             </ul>
           </div>

@@ -45,11 +45,15 @@ vercel.json     SPA rewrite + security headers + asset caching
 
 1. **Create the Supabase project** → Project Settings → API → copy the URL
    and anon key into `.env` (never commit real keys).
-2. **Run all SQL migrations in order** (`supabase/migrations/0001` →
-   `0005`) via the Supabase SQL editor or the CLI. This creates the schema,
+2. **Run all SQL migrations in order** (every file in
+   `supabase/migrations/`, `0001` → the highest-numbered one — never stop
+   early) via the Supabase SQL editor or the CLI. This creates the schema,
    RLS policies, the `place_order`/`get_order_by_number` RPCs, the restock
-   trigger, seed categories, seed delivery prices for all 58 wilayas, and
-   the `product-images`/`product-videos` storage buckets.
+   trigger, seed categories, seed delivery prices for all 69 wilayas (the 58
+   original + the 11 added in the April 2026 reorganization), quantity
+   offers / custom variants, and the `product-images`/`product-videos`
+   storage buckets. Skipping the later migrations launches the store with
+   only 58 wilayas and no offers/variants support.
 3. **Create the admin user** in Supabase Auth (Authentication → Users →
    Add user, email/password). Nothing in `/admin` can be live-tested
    without this.
