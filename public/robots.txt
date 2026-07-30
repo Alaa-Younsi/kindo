@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /checkout
 
-Sitemap: https://kindo.dz/sitemap.xml
+Sitemap: https://www.kindodz.com/sitemap.xml

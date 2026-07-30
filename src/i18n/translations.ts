@@ -248,6 +248,13 @@ export const translations = {
     "admin.reviews.text": "Avis",
     "admin.reviews.stars": "Étoiles",
 
+    // Coming soon (temporary — remove with the COMING_SOON flag once the store opens)
+    "comingSoon.badge": "Bientôt disponible",
+    "comingSoon.banner": "Notre boutique ouvre très bientôt — nos produits arrivent !",
+    "comingSoon.title": "Notre boutique arrive bientôt",
+    "comingSoon.text":
+      "Nous préparons quelque chose de spécial pour vos compagnons. Nos produits seront disponibles très bientôt — merci de votre patience !",
+
     // Misc
     "common.loading": "Chargement...",
     "common.currency": "DA",
@@ -502,6 +509,13 @@ export const translations = {
     "admin.reviews.name": "اسم العميل",
     "admin.reviews.text": "الرأي",
     "admin.reviews.stars": "النجوم",
+
+    // Coming soon (temporary — remove with the COMING_SOON flag once the store opens)
+    "comingSoon.badge": "قريباً",
+    "comingSoon.banner": "متجرنا يفتح قريباً جداً — منتجاتنا في الطريق!",
+    "comingSoon.title": "متجرنا قادم قريباً",
+    "comingSoon.text":
+      "نحضّر شيئاً مميزاً لرفاقكم الأليفة. ستتوفر منتجاتنا قريباً جداً — شكراً لصبركم!",
 
     // Misc
     "common.loading": "جارٍ التحميل...",

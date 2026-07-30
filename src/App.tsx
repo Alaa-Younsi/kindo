@@ -3,7 +3,9 @@ import { Routes, Route, useLocation } from "react-router-dom";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
+import { ComingSoonBanner, ComingSoonPanel } from "@/components/layout/ComingSoon";
 import { ScrollProgress } from "@/components/effects/ScrollProgress";
+import { COMING_SOON } from "@/lib/comingSoon";
 import { trackPageView } from "@/lib/pixel";
 
 // Storefront pages are the customer-facing critical path — kept eager for
@@ -56,11 +58,23 @@ function StorefrontLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ScrollProgress />
+      {COMING_SOON && <ComingSoonBanner />}
       <Header />
       <main className="flex-1">{children}</main>
       <Footer />
       <CartDrawer />
     </>
+  );
+}
+
+/**
+ * While COMING_SOON is on, product-bearing routes (shop, product detail,
+ * checkout, order confirmation) show the Coming Soon panel instead so no
+ * catalogue is exposed — even via direct URLs. Flip the flag off to restore.
+ */
+function StorefrontRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <StorefrontLayout>{COMING_SOON ? <ComingSoonPanel /> : children}</StorefrontLayout>
   );
 }
 
@@ -80,22 +94,22 @@ export default function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<StorefrontLayout><Landing /></StorefrontLayout>} />
-          <Route path="/shop" element={<StorefrontLayout><Shop /></StorefrontLayout>} />
+          <Route path="/shop" element={<StorefrontRoute><Shop /></StorefrontRoute>} />
           <Route
             path="/product/:slug"
             element={
-              <StorefrontLayout>
+              <StorefrontRoute>
                 <ProductPage />
-              </StorefrontLayout>
+              </StorefrontRoute>
             }
           />
-          <Route path="/checkout" element={<StorefrontLayout><Checkout /></StorefrontLayout>} />
+          <Route path="/checkout" element={<StorefrontRoute><Checkout /></StorefrontRoute>} />
           <Route
             path="/order-confirmation/:orderNumber"
             element={
-              <StorefrontLayout>
+              <StorefrontRoute>
                 <OrderConfirmation />
-              </StorefrontLayout>
+              </StorefrontRoute>
             }
           />
 

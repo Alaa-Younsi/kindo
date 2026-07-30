@@ -24,6 +24,7 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCategories } from "@/hooks/useCategories";
 import { topLevelCategories } from "@/lib/categories";
 import { useFeaturedProducts } from "@/hooks/useProducts";
+import { COMING_SOON } from "@/lib/comingSoon";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useSeo } from "@/hooks/useSeo";
 import { localize } from "@/lib/format";
@@ -106,7 +107,7 @@ export default function Landing() {
       "@context": "https://schema.org",
       "@type": "Store",
       name: "KINDO",
-      url: import.meta.env.VITE_SITE_URL || "https://kindo.dz",
+      url: import.meta.env.VITE_SITE_URL || "https://www.kindodz.com",
       description: t("hero.subtitle"),
       areaServed: "Algérie",
       paymentAccepted: "Cash on delivery",
@@ -323,7 +324,8 @@ export default function Landing() {
       </section>
 
       {/* ================= Featured products ================= */}
-      {featured && featured.length > 0 && (
+      {/* Hidden while COMING_SOON is on so no catalogue is shown before launch. */}
+      {!COMING_SOON && featured && featured.length > 0 && (
         <section className="bg-tint-green relative">
           <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
             <SectionHeading

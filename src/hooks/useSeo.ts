@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const SITE_URL = import.meta.env.VITE_SITE_URL || "https://kindo.dz";
+const SITE_URL = import.meta.env.VITE_SITE_URL || "https://www.kindodz.com";
 const SITE_NAME = "KINDO";
 
 interface SeoOptions {

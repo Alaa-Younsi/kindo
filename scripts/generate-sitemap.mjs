@@ -4,14 +4,26 @@
 //
 // Every static route below must exist in src/App.tsx's <Route> list, or the
 // sitemap advertises a 404 to Google.
-import { writeFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const SITE_URL = (process.env.VITE_SITE_URL || "https://kindo.dz").replace(/\/$/, "");
+const SITE_URL = (process.env.VITE_SITE_URL || "https://www.kindodz.com").replace(/\/$/, "");
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.VITE_SUPABASE_ANON_KEY;
 
 const STATIC_ROUTES = ["/", "/shop"];
+
+// Single source of truth: src/lib/comingSoon.ts. While the store is in
+// "Coming Soon" mode every product page shows a placeholder, so we keep those
+// URLs out of the sitemap instead of advertising them to Google.
+function isComingSoon() {
+  try {
+    const src = readFileSync(resolve("src/lib/comingSoon.ts"), "utf8");
+    return /export const COMING_SOON\s*=\s*true/.test(src);
+  } catch {
+    return false;
+  }
+}
 
 async function fetchActiveProductSlugs() {
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
@@ -69,9 +81,14 @@ Sitemap: ${SITE_URL}/sitemap.xml
 `;
 }
 
-const productSlugs = await fetchActiveProductSlugs();
+const comingSoon = isComingSoon();
+const productSlugs = comingSoon ? [] : await fetchActiveProductSlugs();
 const productUrls = productSlugs.map((slug) => `/product/${slug}`);
 const allUrls = [...STATIC_ROUTES, ...productUrls];
+
+if (comingSoon) {
+  console.log("[generate-sitemap] COMING_SOON is on — product URLs excluded from the sitemap.");
+}
 
 writeFileSync(resolve("public/sitemap.xml"), buildSitemapXml(allUrls));
 writeFileSync(resolve("public/robots.txt"), buildRobotsTxt());

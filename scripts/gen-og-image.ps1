@@ -1,6 +1,9 @@
-# Generates public/og-image.png (1200x630) — the social-share preview image.
+# Generates public/og-image.png (1200x630) — the social-share preview image
+# (Open Graph / Twitter card). Composites the real brand logo (public/logo.png)
+# on a bright, on-brand background that matches the storefront's playful look.
 # One-off asset generation, not wired into the build. Re-run manually if the
-# brand colors or wordmark ever change.
+# brand, tagline or domain ever change:
+#   powershell -ExecutionPolicy Bypass -File scripts/gen-og-image.ps1
 Add-Type -AssemblyName System.Drawing
 
 $width = 1200
@@ -8,28 +11,82 @@ $height = 630
 $bmp = New-Object System.Drawing.Bitmap($width, $height)
 $g = [System.Drawing.Graphics]::FromImage($bmp)
 $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+$g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+$g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
 $g.TextRenderingHint = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
 
-# Solid dark background
-$bgColor = [System.Drawing.Color]::FromArgb(255, 17, 18, 20)
-$g.Clear($bgColor)
+# Brand palette (matches src design tokens)
+$cream  = [System.Drawing.Color]::FromArgb(255, 255, 248, 239)
+$ink    = [System.Drawing.Color]::FromArgb(255, 26, 27, 30)
+$muted  = [System.Drawing.Color]::FromArgb(255, 110, 112, 120)
+$red    = [System.Drawing.Color]::FromArgb(255, 232, 52, 42)
+$blue   = [System.Drawing.Color]::FromArgb(255, 27, 108, 235)
+$green  = [System.Drawing.Color]::FromArgb(255, 32, 158, 91)
+$yellow = [System.Drawing.Color]::FromArgb(255, 255, 199, 41)
 
-# Radial glow using a PathGradientBrush (plain concentric circles band visibly)
-$glowPath = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowPath.AddEllipse(-200, -250, 1600, 1400)
-$glowBrush = New-Object System.Drawing.Drawing2D.PathGradientBrush($glowPath)
-$glowBrush.CenterColor = [System.Drawing.Color]::FromArgb(140, 232, 52, 42)
-$glowBrush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 17, 18, 20))
-$g.FillPath($glowBrush, $glowPath)
+# --- Background: warm cream base ---
+$g.Clear($cream)
 
-$glowPath2 = New-Object System.Drawing.Drawing2D.GraphicsPath
-$glowPath2.AddEllipse(700, -100, 900, 900)
-$glowBrush2 = New-Object System.Drawing.Drawing2D.PathGradientBrush($glowPath2)
-$glowBrush2.CenterColor = [System.Drawing.Color]::FromArgb(90, 27, 108, 235)
-$glowBrush2.SurroundColors = @([System.Drawing.Color]::FromArgb(0, 17, 18, 20))
-$g.FillPath($glowBrush2, $glowPath2)
+# --- Soft colour blobs (radial glows), matching the hero "mesh" background ---
+function Add-Glow($cx, $cy, $r, $color, $alpha) {
+  $path = New-Object System.Drawing.Drawing2D.GraphicsPath
+  $path.AddEllipse($cx - $r, $cy - $r, $r * 2, $r * 2)
+  $brush = New-Object System.Drawing.Drawing2D.PathGradientBrush($path)
+  $brush.CenterColor = [System.Drawing.Color]::FromArgb($alpha, $color.R, $color.G, $color.B)
+  $brush.SurroundColors = @([System.Drawing.Color]::FromArgb(0, $cream.R, $cream.G, $cream.B))
+  $g.FillPath($brush, $path)
+  $brush.Dispose(); $path.Dispose()
+}
+Add-Glow -80  -40  520 $red    70
+Add-Glow 1260 60   480 $blue   60
+Add-Glow 1180 680  520 $yellow 90
+Add-Glow -60  700  460 $green  60
 
-# Logo badge (rounded square with paw print, matching public/favicon.svg colors)
+# --- Scattered paw prints for playful texture ---
+function Add-Paw($x, $y, $s, $color, $alpha) {
+  $b = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb($alpha, $color.R, $color.G, $color.B))
+  $g.FillEllipse($b, $x - 24 * $s, $y + 2 * $s, 48 * $s, 40 * $s)   # pad
+  $g.FillEllipse($b, $x - 40 * $s, $y - 30 * $s, 20 * $s, 26 * $s)  # toes
+  $g.FillEllipse($b, $x + 20 * $s, $y - 30 * $s, 20 * $s, 26 * $s)
+  $g.FillEllipse($b, $x - 18 * $s, $y - 44 * $s, 18 * $s, 24 * $s)
+  $g.FillEllipse($b, $x + 0  * $s, $y - 44 * $s, 18 * $s, 24 * $s)
+  $b.Dispose()
+}
+Add-Paw 140  120 1.0 $red    26
+Add-Paw 1070 150 0.8 $blue   26
+Add-Paw 1010 500 1.1 $green  24
+Add-Paw 190  520 0.9 $yellow 42
+Add-Paw 600  90  0.6 $ink    12
+
+# --- Real brand logo, centered near the top ---
+$logoPath = Join-Path $PSScriptRoot "..\public\logo.png"
+$logo = [System.Drawing.Image]::FromFile($logoPath)
+$logoW = 470
+$logoH = [int]($logoW * $logo.Height / $logo.Width)
+$logoX = [int](($width - $logoW) / 2)
+$logoY = 92
+$g.DrawImage($logo, $logoX, $logoY, $logoW, $logoH)
+$logo.Dispose()
+
+# --- Centered text helper ---
+$center = New-Object System.Drawing.StringFormat
+$center.Alignment = [System.Drawing.StringAlignment]::Center
+function Draw-Centered($text, $font, $brush, $y) {
+  $rect = New-Object System.Drawing.RectangleF(0, $y, $width, 100)
+  $g.DrawString($text, $font, $brush, $rect, $center)
+}
+
+# Tagline
+$taglineFont = New-Object System.Drawing.Font("Segoe UI", 34, [System.Drawing.FontStyle]::Bold)
+$inkBrush = New-Object System.Drawing.SolidBrush($ink)
+Draw-Centered "Tout pour vos compagnons" $taglineFont $inkBrush 340
+
+# Subtitle
+$subFont = New-Object System.Drawing.Font("Segoe UI", 21, [System.Drawing.FontStyle]::Regular)
+$mutedBrush = New-Object System.Drawing.SolidBrush($muted)
+Draw-Centered "Chiens  -  Chats  -  Oiseaux  -  Poissons" $subFont $mutedBrush 402
+
+# --- Trust pills (centered row) ---
 function New-RoundedRect($x, $y, $w, $h, $r) {
   $path = New-Object System.Drawing.Drawing2D.GraphicsPath
   $path.AddArc($x, $y, $r, $r, 180, 90)
@@ -40,58 +97,65 @@ function New-RoundedRect($x, $y, $w, $h, $r) {
   return $path
 }
 
-$badgeSize = 110
-$badgeX = 100
-$badgeY = 210
-$badgePath = New-RoundedRect $badgeX $badgeY $badgeSize $badgeSize 32
-$badgeBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 232, 52, 42))
-$g.FillPath($badgeBrush, $badgePath)
+$pillFont = New-Object System.Drawing.Font("Segoe UI", 19, [System.Drawing.FontStyle]::Bold)
+$pillH = 56
+$padX = 30
+$dot = 16
+$gapDotText = 14
+$gapPills = 22
 
-$pawBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
-$cx = $badgeX + $badgeSize / 2
-$cy = $badgeY + $badgeSize / 2
-$g.FillEllipse($pawBrush, $cx - 24, $cy + 2, 48, 40)
-$g.FillEllipse($pawBrush, $cx - 40, $cy - 30, 20, 26)
-$g.FillEllipse($pawBrush, $cx + 20, $cy - 30, 20, 26)
-$g.FillEllipse($pawBrush, $cx - 18, $cy - 42, 18, 24)
-$g.FillEllipse($pawBrush, $cx + 0, $cy - 42, 18, 24)
-
-# Wordmark
-$wordFont = New-Object System.Drawing.Font("Segoe UI", 76, [System.Drawing.FontStyle]::Bold)
-$whiteBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
-$g.DrawString("KINDO", $wordFont, $whiteBrush, 240, 218)
-
-# Tagline
-$taglineFont = New-Object System.Drawing.Font("Segoe UI", 30, [System.Drawing.FontStyle]::Regular)
-$mutedBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::FromArgb(255, 200, 200, 206))
-$g.DrawString("Tout pour vos compagnons - Livraison 69 wilayas", $taglineFont, $mutedBrush, 100, 400)
-
-# Color dots (brand palette)
-$dotY = 470
-$dotColors = @(
-  [System.Drawing.Color]::FromArgb(255, 232, 52, 42),
-  [System.Drawing.Color]::FromArgb(255, 27, 108, 235),
-  [System.Drawing.Color]::FromArgb(255, 32, 158, 91),
-  [System.Drawing.Color]::FromArgb(255, 255, 199, 41)
+# Build accented strings from code points so the output is unaffected by the
+# script file's text encoding (PowerShell 5.1 can misread non-BOM UTF-8).
+$a_grave = [char]0x00E0  # à
+$pills = @(
+  @{ Text = "Livraison 69 wilayas"; Color = $green },
+  @{ Text = "Paiement $a_grave la livraison"; Color = $blue }
 )
-$dotX = 100
-foreach ($color in $dotColors) {
-  $brush = New-Object System.Drawing.SolidBrush($color)
-  $g.FillEllipse($brush, $dotX, $dotY, 28, 28)
-  $dotX += 44
-  $brush.Dispose()
+
+# Measure to compute total width, then center the group
+$measured = @()
+$totalW = 0
+foreach ($p in $pills) {
+  $tw = $g.MeasureString($p.Text, $pillFont).Width
+  $pw = $padX + $dot + $gapDotText + $tw + $padX
+  $measured += @{ Text = $p.Text; Color = $p.Color; W = $pw; TextW = $tw }
+  $totalW += $pw
+}
+$totalW += $gapPills * ($pills.Count - 1)
+
+$pillY = 470
+$px = ($width - $totalW) / 2
+$whiteBrush = New-Object System.Drawing.SolidBrush([System.Drawing.Color]::White)
+foreach ($m in $measured) {
+  $path = New-RoundedRect $px $pillY $m.W $pillH ($pillH)
+  # white fill + coloured border
+  $g.FillPath($whiteBrush, $path)
+  $pen = New-Object System.Drawing.Pen([System.Drawing.Color]::FromArgb(90, $m.Color.R, $m.Color.G, $m.Color.B), 2)
+  $g.DrawPath($pen, $path)
+  # dot
+  $dotBrush = New-Object System.Drawing.SolidBrush($m.Color)
+  $g.FillEllipse($dotBrush, $px + $padX, $pillY + ($pillH - $dot) / 2, $dot, $dot)
+  # text
+  $textBrush = New-Object System.Drawing.SolidBrush($ink)
+  $tf = New-Object System.Drawing.StringFormat
+  $tf.LineAlignment = [System.Drawing.StringAlignment]::Center
+  $textRect = New-Object System.Drawing.RectangleF(($px + $padX + $dot + $gapDotText), $pillY, ($m.TextW + 6), $pillH)
+  $g.DrawString($m.Text, $pillFont, $textBrush, $textRect, $tf)
+  $px += $m.W + $gapPills
+  $pen.Dispose(); $dotBrush.Dispose(); $textBrush.Dispose(); $path.Dispose()
 }
 
+# --- Domain ---
+$domainFont = New-Object System.Drawing.Font("Segoe UI", 24, [System.Drawing.FontStyle]::Bold)
+$redBrush = New-Object System.Drawing.SolidBrush($red)
+Draw-Centered "www.kindodz.com" $domainFont $redBrush 556
+
+# --- Save ---
 $outPath = Join-Path $PSScriptRoot "..\public\og-image.png"
 $bmp.Save($outPath, [System.Drawing.Imaging.ImageFormat]::Png)
 
-$g.Dispose()
-$bmp.Dispose()
-$badgeBrush.Dispose()
-$pawBrush.Dispose()
-$whiteBrush.Dispose()
-$mutedBrush.Dispose()
-$glowBrush.Dispose()
-$glowBrush2.Dispose()
+$g.Dispose(); $bmp.Dispose()
+$inkBrush.Dispose(); $mutedBrush.Dispose(); $whiteBrush.Dispose(); $redBrush.Dispose()
+$taglineFont.Dispose(); $subFont.Dispose(); $pillFont.Dispose(); $domainFont.Dispose()
 
-Write-Host "Wrote $outPath"
+Write-Host "Wrote $outPath ($width x $height)"
