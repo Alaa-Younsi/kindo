@@ -37,9 +37,25 @@ supabase/
 scripts/
   generate-sitemap.mjs   prebuild: writes public/sitemap.xml + public/robots.txt
   gen-og-image.ps1       one-off: regenerates public/og-image.png
+  optimize-assets.mjs    one-off: compresses static images in public/ (see below)
 middleware.ts   Vercel Edge — serves real OG tags to social-share crawlers on /product/:slug
-vercel.json     SPA rewrite + security headers + asset caching
+vercel.json     SPA rewrite + CSP + security headers + asset caching
 ```
+
+## Images & egress
+
+Two independent halves keep the Supabase egress + Vercel Cached Egress bill flat:
+
+- **Uploaded** product/category/review images — `compressImage()`
+  (`src/lib/image.ts`) downscales + re-encodes to WebP *before* upload, and
+  `<SmartImage>` requests a size-appropriate variant from Supabase's on-the-fly
+  render endpoint (`responsiveSrcSet`), falling back to the original object URL
+  if that endpoint is ever disabled. Every `<img>` on a Supabase URL goes
+  through `SmartImage` (or a hand-written `srcSet`).
+- **Committed** `public/` assets (logo, favicon, OG image, hero, certificates,
+  seed photos) — `bun run optimize:assets` (idempotent; run after adding any).
+  `vercel.json` gives `/images/*` and the icon set a 1-week
+  `stale-while-revalidate` cache so returning visitors don't re-download them.
 
 ## Go-live checklist
 
@@ -51,9 +67,12 @@ vercel.json     SPA rewrite + security headers + asset caching
    RLS policies, the `place_order`/`get_order_by_number` RPCs, the restock
    trigger, seed categories, seed delivery prices for all 69 wilayas (the 58
    original + the 11 added in the April 2026 reorganization), quantity
-   offers / custom variants, and the `product-images`/`product-videos`
-   storage buckets. Skipping the later migrations launches the store with
-   only 58 wilayas and no offers/variants support.
+   offers / custom variants, the `product-images`/`product-videos`
+   storage buckets, and (`0014`) the concurrency lock + circuit breaker in
+   `place_order`, non-enumerable order numbers, the `get_admin_order_stats`
+   aggregate, and storage size/mime limits. Skipping the later migrations
+   launches the store with only 58 wilayas, no offers/variants, and the
+   pre-hardening `place_order`.
 3. **Create the admin user** in Supabase Auth (Authentication → Users →
    Add user, email/password). Nothing in `/admin` can be live-tested
    without this.
@@ -96,16 +115,23 @@ vercel.json     SPA rewrite + security headers + asset caching
    return a distinct `ERR_*`-prefixed error, never a 200 or a raw Postgres
    stack trace. Cancel one test order in the admin and confirm the
    product's stock goes back up (the restock trigger).
-10. **Set the real Meta Pixel ID** in `index.html` — replace both
-    `YOUR_PIXEL_ID` occurrences (the `<script>` init call and the
-    `<noscript>` fallback `<img>`). The SPA-aware event wiring
-    (`PageView` on route change, `ViewContent`, `AddToCart`,
-    `InitiateCheckout`, `Purchase`) is already implemented in
-    `src/lib/pixel.ts` and wired through the pages — only the ID itself
-    needs to change.
+10. **Set `VITE_META_PIXEL_ID`** in the Vercel project env (the 15–16 digit
+    id from Events Manager). The `index.html` snippet is guarded — with the
+    var unset the pixel never loads and files no junk `PageView`. The
+    SPA-aware event wiring (`PageView` on route change, `ViewContent`,
+    `AddToCart`, `InitiateCheckout`, `Purchase`) is already implemented in
+    `src/lib/pixel.ts` and `src/App.tsx` — only the id needs to be set.
 11. **robots.txt / sitemap.xml** regenerate automatically on every
     `bun run build` (the `prebuild` script), sourced from `VITE_SITE_URL`
     and the live `products` table — don't hand-edit them.
+12. **Verify the CSP on a deploy preview**, not locally — `Content-Security-
+    Policy` in `vercel.json` is inert under `bun run dev`. Open the preview
+    URL with the console open and walk a product page (Storage images +
+    video), a checkout (the `place_order` POST) and the admin image upload
+    (blob URLs); a blocked realtime socket shows only as stale data, so
+    check it deliberately.
+13. **`bun run optimize:assets`** after dropping any new image into `public/`
+    (client logo, certificates, hero) so it never ships full-size.
 
 ## Deploying (Vercel + GitHub)
 
@@ -130,3 +156,4 @@ SPA rewrite, security headers, and asset caching.
 | `bun run typecheck`  | `tsc --noEmit`                                |
 | `bun run lint`       | ESLint, zero warnings                         |
 | `bun run preview`    | Preview the production build locally          |
+| `bun run optimize:assets` | Compress static images in `public/` (idempotent) |

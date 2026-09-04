@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useCartStore } from "@/store/cart";
 import {
@@ -194,13 +195,12 @@ export default function Checkout() {
                 >
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">
                     {line.image && (
-                      <img
+                      <SmartImage
                         src={line.image}
                         alt=""
                         width={56}
                         height={56}
-                        loading="lazy"
-                        decoding="async"
+                        sizes="56px"
                         className="h-full w-full object-cover"
                       />
                     )}

@@ -8,31 +8,43 @@ import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/lib/format";
 import type { Order } from "@/types/db";
 
+interface OrderStats {
+  total_orders: number;
+  pending_orders: number;
+  active_products: number;
+  revenue: number;
+}
+
 function useDashboardStats() {
   return useQuery({
     queryKey: ["admin", "dashboard-stats"],
     queryFn: async () => {
-      const [{ count: totalOrders }, { count: pendingOrders }, { count: activeProducts }, revenueRes] =
+      // KPI cards from a SECURITY DEFINER aggregate — never sum every order
+      // row in the browser (unbounded as the store grows).
+      const [{ data: stats, error: statsError }, { data: recentOrders, error: recentError }] =
         await Promise.all([
-          supabase.from("orders").select("*", { count: "exact", head: true }),
-          supabase.from("orders").select("*", { count: "exact", head: true }).eq("status", "pending"),
-          supabase.from("products").select("*", { count: "exact", head: true }).eq("status", "active"),
-          supabase.from("orders").select("total").neq("status", "cancelled"),
+          supabase.rpc("get_admin_order_stats"),
+          supabase
+            .from("orders")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .limit(5),
         ]);
+      if (statsError) throw statsError;
+      if (recentError) throw recentError;
 
-      const revenue = (revenueRes.data ?? []).reduce((sum, o) => sum + Number(o.total), 0);
-
-      const { data: recentOrders } = await supabase
-        .from("orders")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(5);
+      const s = (stats as OrderStats | null) ?? {
+        total_orders: 0,
+        pending_orders: 0,
+        active_products: 0,
+        revenue: 0,
+      };
 
       return {
-        totalOrders: totalOrders ?? 0,
-        pendingOrders: pendingOrders ?? 0,
-        activeProducts: activeProducts ?? 0,
-        revenue,
+        totalOrders: s.total_orders,
+        pendingOrders: s.pending_orders,
+        activeProducts: s.active_products,
+        revenue: Number(s.revenue),
         recentOrders: (recentOrders as Order[]) ?? [],
       };
     },

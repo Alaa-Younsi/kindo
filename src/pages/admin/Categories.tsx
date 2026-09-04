@@ -5,6 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { slugify, uniqueSlug } from "@/lib/utils";
 import { compressImage } from "@/lib/image";
@@ -45,6 +47,7 @@ function useCategoriesAdmin() {
 
 export default function AdminCategories() {
   const { t, lang } = useLanguage();
+  const { toast } = useAdminToast();
   const queryClient = useQueryClient();
   const { data: categories, isLoading } = useCategoriesAdmin();
   const [form, setForm] = useState<CategoryFormState | null>(null);
@@ -95,8 +98,11 @@ export default function AdminCategories() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast(t("admin.saved"));
       setForm(null);
     },
+    onError: () => toast(t("admin.saveError"), "error"),
   });
 
   const deleteMutation = useMutation({
@@ -107,7 +113,9 @@ export default function AdminCategories() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "categories"] });
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     },
+    onError: () => toast(t("admin.deleteError"), "error"),
   });
 
   const handleImageUpload = async (file: File) => {
@@ -121,6 +129,8 @@ export default function AdminCategories() {
       if (error) throw error;
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => (f ? { ...f, image_url: data.publicUrl } : f));
+    } catch {
+      toast(t("admin.uploadError"), "error");
     } finally {
       setUploading(false);
     }
@@ -159,7 +169,14 @@ export default function AdminCategories() {
             <span style={{ paddingInlineStart: `${depth * 20}px` }} className="flex items-center gap-2">
               {depth > 0 && <span className="text-muted">└</span>}
               {cat.image_url ? (
-                <img src={cat.image_url} alt="" className="h-8 w-8 rounded-lg object-cover" />
+                <SmartImage
+                  src={cat.image_url}
+                  alt=""
+                  width={32}
+                  height={32}
+                  sizes="32px"
+                  className="h-8 w-8 rounded-lg object-cover"
+                />
               ) : (
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel-2 text-line">
                   <ImageOff className="h-4 w-4" />
@@ -252,7 +269,14 @@ export default function AdminCategories() {
             <div className="flex items-center gap-4">
               <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl border-2 border-line bg-panel-2">
                 {form.image_url ? (
-                  <img src={form.image_url} alt="" className="h-full w-full object-cover" />
+                  <SmartImage
+                    src={form.image_url}
+                    alt=""
+                    width={80}
+                    height={80}
+                    sizes="80px"
+                    className="h-full w-full object-cover"
+                  />
                 ) : (
                   <ImageOff className="h-6 w-6 text-line" />
                 )}

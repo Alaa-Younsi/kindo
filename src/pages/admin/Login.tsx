@@ -25,7 +25,7 @@ export default function AdminLogin() {
     try {
       await signIn(email, password);
     } catch (err) {
-      console.error("[admin login]", err);
+      if (import.meta.env.DEV) console.error("[admin login]", err);
       setError(true);
     } finally {
       setSubmitting(false);

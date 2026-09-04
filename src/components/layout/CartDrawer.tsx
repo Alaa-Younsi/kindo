@@ -3,6 +3,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { Drawer } from "@/components/ui/Drawer";
 import { Button } from "@/components/ui/Button";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { CatMascot } from "@/components/effects/mascots";
 import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
@@ -56,13 +57,12 @@ export function CartDrawer() {
                     className="h-20 w-20 shrink-0 overflow-hidden rounded-xl bg-panel-2"
                   >
                     {line.image && (
-                      <img
+                      <SmartImage
                         src={line.image}
                         alt={lang === "ar" ? line.name_ar : line.name_fr}
                         width={80}
                         height={80}
-                        loading="lazy"
-                        decoding="async"
+                        sizes="80px"
                         className="h-full w-full object-cover"
                       />
                     )}

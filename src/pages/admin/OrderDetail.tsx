@@ -3,6 +3,8 @@ import { useAdminOrder, useUpdateOrderStatus } from "@/hooks/useOrders";
 import { Select } from "@/components/ui/Select";
 import { BentoPanel } from "@/components/ui/BentoPanel";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/lib/format";
 import type { OrderStatus } from "@/types/db";
@@ -10,11 +12,15 @@ import type { OrderStatus } from "@/types/db";
 export default function AdminOrderDetail() {
   const { id } = useParams<{ id: string }>();
   const { t, lang } = useLanguage();
-  const { data: order, isLoading } = useAdminOrder(id);
+  const { toast } = useAdminToast();
+  const { data: order, isLoading, isError } = useAdminOrder(id);
   const updateStatus = useUpdateOrderStatus();
 
-  if (isLoading || !order) {
+  if (isLoading) {
     return <p className="text-muted">{t("common.loading")}</p>;
+  }
+  if (isError || !order) {
+    return <p className="text-brand">{t("admin.loadError")}</p>;
   }
 
   return (
@@ -26,7 +32,13 @@ export default function AdminOrderDetail() {
         <Select
           value={order.status}
           onChange={(e) =>
-            updateStatus.mutate({ id: order.id, status: e.target.value as OrderStatus })
+            updateStatus.mutate(
+              { id: order.id, status: e.target.value as OrderStatus },
+              {
+                onSuccess: () => toast(t("admin.saved")),
+                onError: () => toast(t("admin.saveError"), "error"),
+              },
+            )
           }
           wrapperClassName="w-48"
         >
@@ -92,12 +104,12 @@ export default function AdminOrderDetail() {
             <li key={item.id} className="flex items-center gap-3 p-4">
               <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">
                 {item.image_url && (
-                  <img
+                  <SmartImage
                     src={item.image_url}
                     alt=""
                     width={56}
                     height={56}
-                    loading="lazy"
+                    sizes="56px"
                     className="h-full w-full object-cover"
                   />
                 )}

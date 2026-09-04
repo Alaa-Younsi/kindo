@@ -93,15 +93,6 @@ export function Footer() {
                   {t("nav.shop")}
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/admin"
-                  className="group flex items-center gap-2 transition-colors hover:text-green"
-                >
-                  <Paw className="h-3 w-3 text-green/40 transition-transform group-hover:rotate-12 group-hover:text-green" />
-                  {t("nav.admin")}
-                </Link>
-              </li>
             </ul>
           </div>
 
@@ -142,8 +133,21 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="relative border-t-2 border-line/60 px-4 py-4 text-center text-xs text-muted">
-          © {new Date().getFullYear()} KINDO. {t("footer.rights")}
+        <div className="relative flex flex-col items-center gap-2 border-t-2 border-line/60 px-4 py-4 text-center text-xs text-muted sm:flex-row sm:justify-between sm:text-start">
+          <span>
+            © {new Date().getFullYear()} KINDO. {t("footer.rights")}
+          </span>
+          <span>
+            {t("footer.developedBy")}{" "}
+            <a
+              href="https://alaayounsi.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-ink transition-colors hover:text-brand"
+            >
+              Alaa Younsi
+            </a>
+          </span>
         </div>
       </div>
     </footer>

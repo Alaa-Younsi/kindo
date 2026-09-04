@@ -1,6 +1,9 @@
 User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
+Disallow: /checkout/
+Disallow: /order-confirmation/
 
 Sitemap: https://www.kindodz.com/sitemap.xml

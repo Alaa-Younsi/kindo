@@ -42,10 +42,14 @@ export default [
   },
   {
     // Provider files intentionally export a hook alongside the component
-    // (LanguageProvider + useLanguage, ThemeProvider + useTheme) per the
+    // (LanguageProvider + useLanguage, ThemeProvider + useTheme, etc.) per the
     // project's provider pattern — fast-refresh boundary warnings here are
     // expected, not a bug.
-    files: ["src/i18n/LanguageProvider.tsx", "src/theme/ThemeProvider.tsx"],
+    files: [
+      "src/i18n/LanguageProvider.tsx",
+      "src/theme/ThemeProvider.tsx",
+      "src/components/admin/AdminToast.tsx",
+    ],
     rules: {
       "react-refresh/only-export-components": "off",
     },

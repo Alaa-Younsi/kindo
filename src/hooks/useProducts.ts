@@ -151,7 +151,8 @@ export function useAdminProducts() {
       const { data, error } = await supabase
         .from("products")
         .select(PRODUCT_SELECT)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .limit(1000);
       if (error) throw error;
       return ((data as Product[]) ?? []).map(normalizeProduct);
     },

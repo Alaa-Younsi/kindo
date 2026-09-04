@@ -4,6 +4,8 @@ import { Plus, Star, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { compressImage } from "@/lib/image";
 import { slugify } from "@/lib/utils";
@@ -34,6 +36,7 @@ function useAllReviews() {
 
 export default function AdminReviews() {
   const { t } = useLanguage();
+  const { toast } = useAdminToast();
   const queryClient = useQueryClient();
   const { data: reviews, isLoading } = useAllReviews();
   const [form, setForm] = useState<FormState | null>(null);
@@ -53,8 +56,10 @@ export default function AdminReviews() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
+      toast(t("admin.saved"));
       setForm(null);
     },
+    onError: () => toast(t("admin.saveError"), "error"),
   });
 
   const toggleMutation = useMutation({
@@ -66,6 +71,7 @@ export default function AdminReviews() {
       queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
+    onError: () => toast(t("admin.saveError"), "error"),
   });
 
   const deleteMutation = useMutation({
@@ -77,6 +83,7 @@ export default function AdminReviews() {
       queryClient.invalidateQueries({ queryKey: ["admin", "reviews"] });
       queryClient.invalidateQueries({ queryKey: ["reviews"] });
     },
+    onError: () => toast(t("admin.deleteError"), "error"),
   });
 
   const handleImageUpload = async (file: File) => {
@@ -90,6 +97,8 @@ export default function AdminReviews() {
       if (error) throw error;
       const { data } = supabase.storage.from("product-images").getPublicUrl(path);
       setForm((f) => (f ? { ...f, image_url: data.publicUrl } : f));
+    } catch {
+      toast(t("admin.uploadError"), "error");
     } finally {
       setUploading(false);
     }
@@ -131,11 +140,12 @@ export default function AdminReviews() {
           />
           <div className="mt-3 flex items-center gap-3">
             {form.image_url && (
-              <img
+              <SmartImage
                 src={form.image_url}
                 alt=""
                 width={48}
                 height={48}
+                sizes="48px"
                 className="h-12 w-12 rounded-full object-cover"
               />
             )}

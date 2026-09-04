@@ -8,6 +8,7 @@ import { localize } from "@/lib/format";
 import { discountPercent } from "@/lib/offers";
 import { Badge } from "@/components/ui/Badge";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { useCartStore } from "@/store/cart";
 import { trackAddToCart } from "@/lib/pixel";
 import { cn } from "@/lib/utils";
@@ -69,13 +70,13 @@ export function ProductCard({ product }: { product: Product }) {
       >
         <div className="relative aspect-square overflow-hidden bg-panel-2">
           {image ? (
-            <img
+            <SmartImage
               src={image.url}
               alt={image.alt ?? localize(product, "name", lang)}
               width={400}
               height={400}
-              loading="lazy"
-              decoding="async"
+              fade={false}
+              sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 260px"
               className="h-full w-full object-cover transition-transform duration-300 group-hover:rotate-1 group-hover:scale-110"
             />
           ) : (

@@ -56,12 +56,18 @@ async function fetchActiveProductSlugs() {
 }
 
 function buildSitemapXml(urls) {
+  const today = new Date().toISOString().slice(0, 10);
   const entries = urls
-    .map(
-      (url) => `  <url>
+    .map((url) => {
+      const priority = url === "/" ? "1.0" : url.startsWith("/product/") ? "0.8" : "0.6";
+      const changefreq = url.startsWith("/product/") ? "weekly" : "daily";
+      return `  <url>
     <loc>${SITE_URL}${url}</loc>
-  </url>`,
-    )
+    <lastmod>${today}</lastmod>
+    <changefreq>${changefreq}</changefreq>
+    <priority>${priority}</priority>
+  </url>`;
+    })
     .join("\n");
 
   return `<?xml version="1.0" encoding="UTF-8"?>
@@ -72,10 +78,15 @@ ${entries}
 }
 
 function buildRobotsTxt() {
+  // Cover trailing-slash + localized variants — `Disallow: /admin` alone does
+  // not match `/admin/` or `/adminx`.
   return `User-agent: *
 Allow: /
 Disallow: /admin
+Disallow: /admin/
 Disallow: /checkout
+Disallow: /checkout/
+Disallow: /order-confirmation/
 
 Sitemap: ${SITE_URL}/sitemap.xml
 `;

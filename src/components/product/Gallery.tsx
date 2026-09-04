@@ -1,6 +1,8 @@
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ImageOff } from "lucide-react";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { responsiveSrcSet } from "@/lib/image";
 
 export interface GalleryImage {
   key: string;
@@ -57,6 +59,8 @@ export function Gallery({ images, activeIndex, onActiveChange }: GalleryProps) {
                 <motion.img
                   key={image.key}
                   src={image.url}
+                  srcSet={responsiveSrcSet(image.url)}
+                  sizes="(max-width: 1024px) 100vw, 560px"
                   alt={image.alt ?? ""}
                   width={600}
                   height={600}
@@ -109,13 +113,13 @@ export function Gallery({ images, activeIndex, onActiveChange }: GalleryProps) {
               onClick={() => onActiveChange(i)}
               className={`h-16 w-16 shrink-0 overflow-hidden rounded-xl border-2 transition-all hover:-translate-y-0.5 ${i === activeIndex ? "border-brand ring-2 ring-brand/30" : "border-line"}`}
             >
-              <img
+              <SmartImage
                 src={img.url}
                 alt=""
                 width={64}
                 height={64}
-                loading="lazy"
-                decoding="async"
+                fade={false}
+                sizes="64px"
                 className="h-full w-full object-cover"
               />
             </button>

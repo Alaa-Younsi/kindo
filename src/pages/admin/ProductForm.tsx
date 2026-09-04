@@ -9,9 +9,11 @@ import { buildCategoryTree, flattenWithDepth } from "@/lib/categories";
 import { Button } from "@/components/ui/Button";
 import { Input, Textarea } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { CustomVariantsEditor } from "@/components/admin/CustomVariantsEditor";
 import { OffersEditor } from "@/components/admin/OffersEditor";
 import { ColorsEditor } from "@/components/admin/ColorsEditor";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { slugify, uniqueSlug, sanitizeVariantGroups, sanitizeColors } from "@/lib/utils";
 import { sanitizeOffers } from "@/lib/offers";
@@ -66,9 +68,12 @@ export default function ProductForm() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { t } = useLanguage();
+  const { toast } = useAdminToast();
   const { data: categories } = useCategories();
   const orderedCategories = categories ? flattenWithDepth(buildCategoryTree(categories)) : [];
-  const { data: existing } = useAdminProduct(isNew ? undefined : id);
+  const { data: existing, isLoading: loadingExisting, isError: loadFailed } = useAdminProduct(
+    isNew ? undefined : id,
+  );
 
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [images, setImages] = useState<ProductImage[]>([]);
@@ -146,15 +151,20 @@ export default function ProductForm() {
       return id as string;
     },
     onSuccess: (productId) => {
+      // One product lives under several query keys — invalidate the storefront
+      // caches too, or the site keeps serving the old price this session.
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast(t("admin.saved"));
       if (isNew) navigate(`/admin/products/${productId}`, { replace: true });
     },
+    onError: () => toast(t("admin.saveError"), "error"),
   });
 
   const handleImageUpload = async (files: FileList) => {
     if (isNew) {
-      alert(t("admin.save") + " " + t("admin.products.title"));
+      toast(t("admin.products.saveFirst"), "error");
       return;
     }
     setUploading(true);
@@ -175,15 +185,40 @@ export default function ProductForm() {
         if (insertError) throw insertError;
         setImages((prev) => [...prev, inserted as ProductImage]);
       }
+    } catch {
+      toast(t("admin.uploadError"), "error");
     } finally {
       setUploading(false);
     }
   };
 
   const handleDeleteImage = async (imageId: string) => {
-    await supabase.from("product_images").delete().eq("id", imageId);
+    const { error } = await supabase.from("product_images").delete().eq("id", imageId);
+    if (error) {
+      toast(t("admin.deleteError"), "error");
+      return;
+    }
     setImages((prev) => prev.filter((img) => img.id !== imageId));
   };
+
+  // A failed load must BLOCK the form — never fall through to blank defaults,
+  // or the next Save writes those blanks over a real product.
+  if (loadFailed) {
+    return (
+      <div className="max-w-3xl">
+        <p className="rounded-2xl border-2 border-brand/30 bg-brand/5 px-4 py-3 text-sm font-bold text-brand">
+          {t("admin.loadError")}
+        </p>
+        <Button variant="outline" className="mt-4" onClick={() => navigate("/admin/products")}>
+          {t("admin.cancel")}
+        </Button>
+      </div>
+    );
+  }
+
+  if (!isNew && loadingExisting) {
+    return <p className="text-muted">{t("common.loading")}</p>;
+  }
 
   return (
     <div className="max-w-3xl">
@@ -326,7 +361,14 @@ export default function ProductForm() {
           <div className="flex flex-wrap gap-3">
             {images.map((img) => (
               <div key={img.id} className="group relative h-24 w-24 overflow-hidden rounded-xl border-2 border-line">
-                <img src={img.url} alt="" width={96} height={96} className="h-full w-full object-cover" />
+                <SmartImage
+                  src={img.url}
+                  alt=""
+                  width={96}
+                  height={96}
+                  sizes="96px"
+                  className="h-full w-full object-cover"
+                />
                 <button
                   onClick={() => handleDeleteImage(img.id)}
                   className="absolute inset-0 flex items-center justify-center bg-ink/50 text-white opacity-0 transition-opacity group-hover:opacity-100"

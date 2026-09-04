@@ -14,6 +14,7 @@ import {
 import { ProductCard } from "@/components/product/ProductCard";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { TiltCard } from "@/components/effects/TiltCard";
 import { WanderingCats } from "@/components/effects/WanderingCats";
 import { HeroFlipCard } from "@/components/effects/HeroFlipCard";
@@ -100,18 +101,10 @@ export default function Landing() {
   const photoY = useTransform(scrollYProgress, [0, 1], [0, 60]);
   const blobY = useTransform(scrollYProgress, [0, 1], [0, -80]);
 
+  // No jsonLd here — index.html already carries the site-wide Store schema.
   useSeo({
     title: t("nav.home"),
     description: t("hero.subtitle"),
-    jsonLd: {
-      "@context": "https://schema.org",
-      "@type": "Store",
-      name: "KINDO",
-      url: import.meta.env.VITE_SITE_URL || "https://www.kindodz.com",
-      description: t("hero.subtitle"),
-      areaServed: "Algérie",
-      paymentAccepted: "Cash on delivery",
-    },
   });
 
   return (
@@ -184,7 +177,7 @@ export default function Landing() {
                     transition={{ delay: 0.2 + i * 0.1, type: "spring", stiffness: 220 }}
                   >
                     <Link
-                      to={`/shop?category=${slug}`}
+                      to={`/shop?categories=${slug}`}
                       aria-label={label}
                       title={label}
                       className={cn(
@@ -192,7 +185,7 @@ export default function Landing() {
                         ring,
                       )}
                     >
-                      <img src={src} alt={label} loading="lazy" decoding="async" className="h-full w-full object-cover" />
+                      <SmartImage src={src} alt={label} width={64} height={64} sizes="64px" className="h-full w-full object-cover" />
                     </Link>
                   </motion.div>
                 );
@@ -279,7 +272,7 @@ export default function Landing() {
                   whileInView="show"
                   viewport={{ once: true, margin: "-40px" }}
                 >
-                  <Link to={`/shop?category=${cat.slug}`} className="group block">
+                  <Link to={`/shop?categories=${cat.slug}`} className="group block">
                     <TiltCard max={12}>
                       <div className="flex flex-col items-center gap-3 rounded-3xl border-2 border-line bg-panel p-5 shadow-sm transition-all duration-200 group-hover:-translate-y-1.5 group-hover:border-transparent group-hover:shadow-xl">
                         {photo ? (
@@ -289,13 +282,13 @@ export default function Landing() {
                               RING_TONES[i % RING_TONES.length],
                             )}
                           >
-                            <img
+                            <SmartImage
                               src={photo}
                               alt={localize(cat, "name", lang)}
                               width={96}
                               height={96}
-                              loading="lazy"
-                              decoding="async"
+                              fade={false}
+                              sizes="(max-width: 768px) 25vw, 96px"
                               className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                             />
                           </span>
@@ -439,12 +432,12 @@ export default function Landing() {
             {(
               [
                 {
-                  src: "/certificate1.jpeg",
+                  src: "/certificate1.webp",
                   label: "UNATO",
                   title: "Union Nationale Algérienne des Techniciens d'Oiseaux d'Ornement",
                 },
                 {
-                  src: "/certificate2.png",
+                  src: "/certificate2.webp",
                   label: "LGA",
                   title: "Laboratoire d'Analyse et Contrôle de Qualité",
                 },
@@ -476,7 +469,9 @@ export default function Landing() {
                     <div className="flex h-full w-full items-center justify-center overflow-hidden rounded-full border-4 border-[#e0a91b]/60 bg-white p-8 shadow-inner">
                       <img
                         src={src}
-                        alt={label}
+                        alt={title}
+                        width={320}
+                        height={320}
                         loading="lazy"
                         decoding="async"
                         className="max-h-full max-w-full object-contain"

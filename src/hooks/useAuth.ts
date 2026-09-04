@@ -1,13 +1,40 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
-export function useAuth() {
+interface AuthValue {
+  session: Session | null;
+  isAuthenticated: boolean;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
+
+const AuthContext = createContext<AuthValue | null>(null);
+
+/**
+ * One listener for the whole app. The naive per-component `useAuth` ran
+ * `getSession()` + a fresh `onAuthStateChange` subscription for every caller
+ * (AdminLayout, Login, …); this hoists it to a single context.
+ * File stays `.ts` + `createElement` so it remains a hook module for fast refresh.
+ */
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
     supabase.auth.getSession().then(({ data }) => {
+      if (!active) return;
       setSession(data.session);
       setLoading(false);
     });
@@ -16,7 +43,10 @@ export function useAuth() {
       setSession(nextSession);
     });
 
-    return () => subscription.subscription.unsubscribe();
+    return () => {
+      active = false;
+      subscription.subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
@@ -28,11 +58,16 @@ export function useAuth() {
     await supabase.auth.signOut();
   }, []);
 
-  return {
-    session,
-    isAuthenticated: !!session,
-    loading,
-    signIn,
-    signOut,
-  };
+  const value = useMemo<AuthValue>(
+    () => ({ session, isAuthenticated: !!session, loading, signIn, signOut }),
+    [session, loading, signIn, signOut],
+  );
+
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+export function useAuth(): AuthValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within AuthProvider");
+  return ctx;
 }

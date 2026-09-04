@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, Navigate, NavLink, Outlet } from "react-router-dom";
+import { Suspense, useEffect, useState } from "react";
+import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowLeft,
@@ -18,6 +18,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Logo } from "@/components/layout/Logo";
+import { AdminToastProvider } from "@/components/admin/AdminToast";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -29,16 +30,19 @@ const NAV_ITEMS = [
   { to: "/admin/reviews", key: "admin.nav.reviews", Icon: Star, end: false },
 ] as const;
 
+// MODULE scope, never inside AdminLayout's body — a component redefined every
+// render gets a new identity and React remounts the whole subtree, which on
+// a touch device swaps the button out mid-tap so the close never fires.
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
   const { t, dir } = useLanguage();
   const { signOut } = useAuth();
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="px-5 py-5">
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="shrink-0 px-5 py-5">
         <Logo />
       </div>
-      <nav className="flex-1 space-y-1 px-3">
+      <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
         {NAV_ITEMS.map(({ to, key, Icon, end }) => (
           <NavLink
             key={to}
@@ -57,7 +61,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
       </nav>
-      <div className="border-t-2 border-line p-3">
+      <div className="shrink-0 border-t-2 border-line p-3">
         <SidebarFooter />
         <Link
           to="/"
@@ -101,10 +105,61 @@ function SidebarFooter() {
   );
 }
 
+function RouteFallback() {
+  return (
+    <div className="flex min-h-[40vh] items-center justify-center text-muted">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-line border-t-brand" />
+    </div>
+  );
+}
+
 export default function AdminLayout() {
   const { isAuthenticated, loading } = useAuth();
   const { dir } = useLanguage();
+  const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close the drawer on any route change (a redirect or the back button
+  // changes the route with no click).
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Close on Escape, and when the viewport crosses to lg (the drawer is
+  // lg:hidden, so a resize would otherwise strand it open with scroll locked).
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const onChange = () => mq.matches && setMobileOpen(false);
+    window.addEventListener("keydown", onKey);
+    mq.addEventListener("change", onChange);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      mq.removeEventListener("change", onChange);
+    };
+  }, [mobileOpen]);
+
+  // Scroll-lock with position:fixed (NOT overflow:hidden — iOS Safari still
+  // rubber-bands under a touch-drag with overflow:hidden, which drags the
+  // fixed drawer out of sync with screen coordinates and makes the close
+  // button un-tappable).
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const y = window.scrollY;
+    const { body } = document;
+    body.style.position = "fixed";
+    body.style.top = `-${y}px`;
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
+    return () => {
+      body.style.position = "";
+      body.style.top = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      window.scrollTo(0, y);
+    };
+  }, [mobileOpen]);
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-muted">…</div>;
@@ -142,28 +197,35 @@ export default function AdminLayout() {
               onClick={() => setMobileOpen(false)}
             />
             <motion.div
-              className="fixed inset-y-0 start-0 z-50 w-72 bg-panel shadow-2xl lg:hidden"
+              className="fixed inset-y-0 start-0 z-50 flex w-72 flex-col overflow-hidden bg-panel shadow-2xl lg:hidden"
               initial={{ x: dir === "rtl" ? "100%" : "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: dir === "rtl" ? "100%" : "-100%" }}
               transition={{ type: "tween", duration: 0.25 }}
             >
-              <div className="flex justify-end p-3">
+              <div className="flex shrink-0 justify-end p-3">
                 <button
                   onClick={() => setMobileOpen(false)}
-                  className="rounded-full p-2 text-muted hover:bg-panel-2"
+                  aria-label="Close menu"
+                  className="-m-2 rounded-full p-2 text-muted hover:bg-panel-2"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
-              <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              <div className="min-h-0 flex-1">
+                <SidebarContent onNavigate={() => setMobileOpen(false)} />
+              </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
       <main className="px-4 py-6 sm:px-6 lg:ms-64 lg:px-8 lg:py-8">
-        <Outlet />
+        <AdminToastProvider>
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
+        </AdminToastProvider>
       </main>
     </div>
   );

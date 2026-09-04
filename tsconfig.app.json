@@ -20,6 +20,10 @@
       "@/*": ["./src/*"]
     },
 
+    /* Type safety */
+    "strict": true,
+    "noImplicitOverride": true,
+
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,

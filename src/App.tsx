@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useRef } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { CartDrawer } from "@/components/layout/CartDrawer";
@@ -87,8 +88,18 @@ function RouteFallback() {
 }
 
 export default function App() {
+  // Clear the stale-chunk reload guard once the app has successfully mounted,
+  // so a genuine stale deploy later still gets its one automatic reload.
+  useEffect(() => {
+    try {
+      sessionStorage.removeItem("kindo-chunk-reload");
+    } catch {
+      /* private mode */
+    }
+  }, []);
+
   return (
-    <>
+    <ErrorBoundary variant="route">
       <ScrollToTop />
       <PixelPageView />
       <Suspense fallback={<RouteFallback />}>
@@ -129,6 +140,6 @@ export default function App() {
           <Route path="*" element={<StorefrontLayout><NotFound /></StorefrontLayout>} />
         </Routes>
       </Suspense>
-    </>
+    </ErrorBoundary>
   );
 }

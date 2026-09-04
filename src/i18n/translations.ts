@@ -148,6 +148,7 @@ export const translations = {
     "footer.contact": "Contact",
     "footer.rights": "Tous droits réservés.",
     "footer.follow": "Suivez-nous",
+    "footer.developedBy": "Site web développé par",
 
     // Not found
     "notFound.title": "Page introuvable",
@@ -177,6 +178,11 @@ export const translations = {
     "admin.confirmDelete": "Confirmer la suppression ?",
     "admin.saving": "Enregistrement...",
     "admin.saved": "Enregistré avec succès",
+    "admin.saveError": "Échec de l'enregistrement. Réessayez.",
+    "admin.deleteError": "Échec de la suppression. Réessayez.",
+    "admin.loadError": "Impossible de charger les données.",
+    "admin.uploadError": "Échec du téléversement de l'image.",
+    "admin.exportError": "Échec de l'export.",
 
     // Admin dashboard
     "admin.dashboard.title": "Tableau de bord",
@@ -195,6 +201,7 @@ export const translations = {
     "admin.products.active": "Actif",
     "admin.products.draft": "Brouillon",
     "admin.products.new": "Nouveau produit",
+    "admin.products.saveFirst": "Enregistrez d'abord le produit pour ajouter des images.",
     "admin.products.customVariants": "Variantes personnalisées",
     "admin.products.variantNameFr": "Nom de la variante (FR)",
     "admin.products.variantNameAr": "اسم الخاصية (AR)",
@@ -228,6 +235,7 @@ export const translations = {
     "admin.orders.status.delivered": "Livrée",
     "admin.orders.status.cancelled": "Annulée",
     "admin.orders.export": "Exporter",
+    "admin.orders.limitNotice": "Affichage des {n} commandes les plus récentes.",
     "admin.orders.deleteAll.button": "Tout supprimer",
     "admin.orders.deleteAll.title": "Supprimer toutes les commandes ?",
     "admin.orders.deleteAll.warning":
@@ -410,6 +418,7 @@ export const translations = {
     "footer.contact": "اتصل بنا",
     "footer.rights": "جميع الحقوق محفوظة.",
     "footer.follow": "تابعنا",
+    "footer.developedBy": "تم تطوير الموقع بواسطة",
 
     // Not found
     "notFound.title": "الصفحة غير موجودة",
@@ -439,6 +448,11 @@ export const translations = {
     "admin.confirmDelete": "تأكيد الحذف؟",
     "admin.saving": "جارٍ الحفظ...",
     "admin.saved": "تم الحفظ بنجاح",
+    "admin.saveError": "فشل الحفظ. حاول مرة أخرى.",
+    "admin.deleteError": "فشل الحذف. حاول مرة أخرى.",
+    "admin.loadError": "تعذّر تحميل البيانات.",
+    "admin.uploadError": "فشل رفع الصورة.",
+    "admin.exportError": "فشل التصدير.",
 
     // Admin dashboard
     "admin.dashboard.title": "لوحة القيادة",
@@ -457,6 +471,7 @@ export const translations = {
     "admin.products.active": "نشط",
     "admin.products.draft": "مسودة",
     "admin.products.new": "منتج جديد",
+    "admin.products.saveFirst": "احفظ المنتج أولاً لإضافة الصور.",
     "admin.products.customVariants": "خصائص مخصصة",
     "admin.products.variantNameFr": "Nom de la variante (FR)",
     "admin.products.variantNameAr": "اسم الخاصية (AR)",
@@ -490,6 +505,7 @@ export const translations = {
     "admin.orders.status.delivered": "تم التوصيل",
     "admin.orders.status.cancelled": "ملغى",
     "admin.orders.export": "تصدير",
+    "admin.orders.limitNotice": "عرض أحدث {n} طلب.",
     "admin.orders.deleteAll.button": "حذف الكل",
     "admin.orders.deleteAll.title": "حذف جميع الطلبات؟",
     "admin.orders.deleteAll.warning":

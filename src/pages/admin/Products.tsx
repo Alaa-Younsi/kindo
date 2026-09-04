@@ -4,6 +4,7 @@ import { useAdminProducts } from "@/hooks/useProducts";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { Price } from "@/components/ui/Price";
+import { SmartImage } from "@/components/ui/SmartImage";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { localize } from "@/lib/format";
 
@@ -44,12 +45,12 @@ export default function AdminProducts() {
                     >
                       <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-panel-2">
                         {product.product_images?.[0] && (
-                          <img
+                          <SmartImage
                             src={product.product_images[0].url}
                             alt=""
                             width={40}
                             height={40}
-                            loading="lazy"
+                            sizes="40px"
                             className="h-full w-full object-cover"
                           />
                         )}

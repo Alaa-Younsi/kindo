@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 
 const SITE_URL = import.meta.env.VITE_SITE_URL || "https://www.kindodz.com";
 const SITE_NAME = "KINDO";
+const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`;
 
 interface SeoOptions {
   title: string;
@@ -47,10 +48,11 @@ export function useSeo({ title, description, image, jsonLd }: SeoOptions) {
     upsertMeta("name", "twitter:title", fullTitle);
     upsertMeta("name", "twitter:description", description);
 
-    if (image) {
-      upsertMeta("property", "og:image", image);
-      upsertMeta("name", "twitter:image", image);
-    }
+    // Always set an explicit image — otherwise a product's photo from the last
+    // route lingers on the next (non-product) page's share card.
+    const ogImage = image || DEFAULT_OG_IMAGE;
+    upsertMeta("property", "og:image", ogImage);
+    upsertMeta("name", "twitter:image", ogImage);
 
     upsertLink("canonical", `${SITE_URL}${location.pathname}`);
 

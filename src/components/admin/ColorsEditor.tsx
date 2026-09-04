@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Plus, Trash2, Upload, X } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SmartImage } from "@/components/ui/SmartImage";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { supabase } from "@/lib/supabase";
 import { compressImage } from "@/lib/image";
@@ -19,6 +21,7 @@ interface ColorsEditorProps {
 
 export function ColorsEditor({ value, onChange, productId }: ColorsEditorProps) {
   const { t } = useLanguage();
+  const { toast } = useAdminToast();
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   const updateColor = (index: number, patch: Partial<ProductColor>) => {
@@ -45,6 +48,8 @@ export function ColorsEditor({ value, onChange, productId }: ColorsEditorProps) 
       if (uploadError) throw uploadError;
       const { data: publicUrl } = supabase.storage.from("product-images").getPublicUrl(path);
       updateColor(index, { image_url: publicUrl.publicUrl });
+    } catch {
+      toast(t("admin.uploadError"), "error");
     } finally {
       setUploadingIndex(null);
     }
@@ -86,7 +91,14 @@ export function ColorsEditor({ value, onChange, productId }: ColorsEditorProps) 
           <div className="flex shrink-0 items-center gap-2">
             {c.image_url ? (
               <div className="group relative h-10 w-10 overflow-hidden rounded-lg border-2 border-line">
-                <img src={c.image_url} alt="" className="h-full w-full object-cover" />
+                <SmartImage
+                  src={c.image_url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  sizes="40px"
+                  className="h-full w-full object-cover"
+                />
                 <button
                   type="button"
                   onClick={() => updateColor(index, { image_url: null })}

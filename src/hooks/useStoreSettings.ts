@@ -2,17 +2,28 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { DeliveryType, StoreSettings } from "@/types/db";
 
+const STORE_SETTINGS_FALLBACK: StoreSettings = {
+  id: 1,
+  shipping_fee: 500,
+  free_ship_threshold: null,
+  updated_at: new Date(0).toISOString(),
+};
+
 export function useStoreSettings() {
   return useQuery({
     queryKey: ["store-settings"],
     queryFn: async (): Promise<StoreSettings> => {
+      // .maybeSingle() (not .single()) — .single() throws on 0 rows and would
+      // white-screen checkout if the seed row were ever missing. Degrade to a
+      // safe default (free shipping OFF) instead; the RPC is the real source
+      // of truth for what gets charged.
       const { data, error } = await supabase
         .from("store_settings")
         .select("*")
         .eq("id", 1)
-        .single();
+        .maybeSingle();
       if (error) throw error;
-      return data as StoreSettings;
+      return (data as StoreSettings) ?? STORE_SETTINGS_FALLBACK;
     },
     staleTime: 5 * 60 * 1000,
   });

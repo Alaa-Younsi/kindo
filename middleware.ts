@@ -37,7 +37,7 @@ export default async function middleware(request: Request) {
 
   const supabaseUrl = process.env.VITE_SUPABASE_URL;
   const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
-  const siteUrl = process.env.VITE_SITE_URL || "https://kindo.dz";
+  const siteUrl = process.env.VITE_SITE_URL || "https://www.kindodz.com";
 
   if (!supabaseUrl || !supabaseAnonKey) {
     return next();

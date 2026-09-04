@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { GuestOrderLookup, Order, OrderStatus } from "@/types/db";
 
+/** Admin order list ceiling. A single COD store realistically never needs more
+ *  than this on screen at once; revisit (add pagination) past a few thousand. */
+export const ADMIN_ORDERS_LIMIT = 300;
+
 export interface PlaceOrderVariantPick {
   name_fr: string;
   name_ar: string;
@@ -67,7 +71,11 @@ export function useAdminOrders(status?: OrderStatus | "all") {
   return useQuery({
     queryKey: ["admin", "orders", status],
     queryFn: async (): Promise<Order[]> => {
-      let query = supabase.from("orders").select("*").order("created_at", { ascending: false });
+      let query = supabase
+        .from("orders")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(ADMIN_ORDERS_LIMIT);
       if (status && status !== "all") {
         query = query.eq("status", status);
       }

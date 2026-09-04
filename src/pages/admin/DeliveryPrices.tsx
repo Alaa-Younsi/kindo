@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { useDeliveryPrices } from "@/hooks/useStoreSettings";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { cn } from "@/lib/utils";
 import type { DeliveryPrice } from "@/types/db";
 
 export default function AdminDeliveryPrices() {
   const { t } = useLanguage();
+  const { toast } = useAdminToast();
   const queryClient = useQueryClient();
   const { data: deliveryPrices, isLoading } = useDeliveryPrices();
   const [rows, setRows] = useState<DeliveryPrice[]>([]);
@@ -29,7 +31,14 @@ export default function AdminDeliveryPrices() {
       if (error) throw error;
     },
     onSuccess: () => {
+      toast(t("admin.saved"));
       queryClient.invalidateQueries({ queryKey: ["delivery-prices"] });
+    },
+    onError: () => {
+      // Refused write — restore the on-screen values from server state so a
+      // rejected price doesn't sit there looking saved.
+      if (deliveryPrices) setRows(deliveryPrices as DeliveryPrice[]);
+      toast(t("admin.saveError"), "error");
     },
   });
 

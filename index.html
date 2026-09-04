@@ -4,6 +4,28 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <!-- Pre-paint theme + language: the React providers only set data-theme /
+         dir / lang from a useEffect, which is one paint too late — a returning
+         dark-mode or Arabic visitor would get a full-screen flash on the very
+         first thing they see. Reads the SAME localStorage keys the providers
+         use (kindo-theme / kindo-lang). Keep in sync with ThemeProvider.tsx
+         and LanguageProvider.tsx. -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("kindo-theme");
+          if (t === "dark" || t === "light") document.documentElement.dataset.theme = t;
+          var l = localStorage.getItem("kindo-lang");
+          if (l === "fr" || l === "ar") {
+            document.documentElement.lang = l;
+            document.documentElement.dir = l === "ar" ? "rtl" : "ltr";
+          }
+        } catch (e) {
+          /* private mode — the static defaults stand */
+        }
+      })();
+    </script>
+
     <title>KINDO — Animalerie en ligne | Livraison 69 wilayas, paiement à la livraison</title>
     <meta
       name="description"
@@ -42,20 +64,15 @@
     />
     <meta name="twitter:image" content="%VITE_SITE_URL%/og-image.png" />
 
-    <link rel="icon" type="image/png" href="/favicon.png" />
-    <link rel="apple-touch-icon" href="/favicon.png" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     <!-- Warm the LCP hero image + header logo so they paint immediately -->
     <link rel="preload" as="image" href="/logo.png" />
     <link rel="preload" as="image" href="/images/hero-pets.webp" fetchpriority="high" />
 
     <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
 
     <script type="application/ld+json">
       {
@@ -72,29 +89,38 @@
       }
     </script>
 
-    <!-- Meta Pixel — replace YOUR_PIXEL_ID before go-live (see README go-live checklist) -->
+    <!-- Meta Pixel — the id comes from VITE_META_PIXEL_ID (set it in the Vercel
+         project env). When it's unset the %VITE_META_PIXEL_ID% token is left
+         verbatim by Vite, and the guard below makes the whole snippet a no-op
+         so nothing loads and no junk "PageView" is filed. SPA route-change
+         PageViews are sent from src/App.tsx (PixelPageView). -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', 'YOUR_PIXEL_ID');
-      fbq('track', 'PageView');
+      (function () {
+        var PIXEL_ID = "%VITE_META_PIXEL_ID%";
+        if (!/^\d{10,20}$/.test(PIXEL_ID)) return;
+        !(function (f, b, e, v, n, t, s) {
+          if (f.fbq) return;
+          n = f.fbq = function () {
+            n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
+          };
+          if (!f._fbq) f._fbq = n;
+          n.push = n;
+          n.loaded = !0;
+          n.version = "2.0";
+          n.queue = [];
+          t = b.createElement(e);
+          t.async = !0;
+          t.src = v;
+          s = b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t, s);
+        })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
+        window.fbq("init", PIXEL_ID);
+        window.fbq("track", "PageView");
+        window.__KINDO_PIXEL_ID = PIXEL_ID;
+      })();
     </script>
   </head>
   <body>
-    <noscript>
-      <img
-        height="1"
-        width="1"
-        style="display: none"
-        src="https://www.facebook.com/tr?id=YOUR_PIXEL_ID&ev=PageView&noscript=1"
-      />
-    </noscript>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

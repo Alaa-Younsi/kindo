@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Download, Trash2 } from "lucide-react";
-import { useAdminOrders, useDeleteAllOrders } from "@/hooks/useOrders";
+import { ADMIN_ORDERS_LIMIT, useAdminOrders, useDeleteAllOrders } from "@/hooks/useOrders";
 import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { DeleteAllOrdersModal } from "@/components/admin/DeleteAllOrdersModal";
 import { Price } from "@/components/ui/Price";
+import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { formatDate } from "@/lib/format";
 import { exportOrdersToExcel } from "@/lib/exportOrders";
@@ -22,18 +23,29 @@ const STATUS_TONE: Record<OrderStatus, "brand" | "blue" | "green" | "yellow" | "
 
 export default function AdminOrders() {
   const { t, lang } = useLanguage();
+  const { toast } = useAdminToast();
   const [status, setStatus] = useState<OrderStatus | "all">("all");
   const { data: orders, isLoading } = useAdminOrders(status);
   const deleteAll = useDeleteAllOrders();
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
 
-  const handleExport = () => {
-    if (orders && orders.length > 0) exportOrdersToExcel(orders);
+  const handleExport = async () => {
+    if (!orders || orders.length === 0) return;
+    try {
+      await exportOrdersToExcel(orders);
+    } catch {
+      toast(t("admin.exportError"), "error");
+    }
   };
 
   const handleConfirmDeleteAll = async () => {
-    await deleteAll.mutateAsync();
-    setDeleteModalOpen(false);
+    try {
+      await deleteAll.mutateAsync();
+      setDeleteModalOpen(false);
+      toast(t("admin.saved"));
+    } catch {
+      toast(t("admin.deleteError"), "error");
+    }
   };
 
   return (
@@ -75,6 +87,12 @@ export default function AdminOrders() {
           </Button>
         </div>
       </div>
+
+      {orders && orders.length >= ADMIN_ORDERS_LIMIT && (
+        <p className="mt-4 text-xs text-muted">
+          {t("admin.orders.limitNotice").replace("{n}", String(ADMIN_ORDERS_LIMIT))}
+        </p>
+      )}
 
       <div className="mt-6 overflow-x-auto rounded-2xl border-2 border-line bg-panel">
         <table className="w-full min-w-[640px] text-sm">
