@@ -5,7 +5,7 @@ const SIZES = {
   // header: compact, scaled up via transform so it doesn't change the bar height
   sm: "h-11 origin-left scale-[1.15] sm:h-12",
   // admin sidebar / standalone: render at true size, no cramped transform
-  lg: "h-14 sm:h-16",
+  lg: "h-20 sm:h-24",
 } as const;
 
 export function Logo({
