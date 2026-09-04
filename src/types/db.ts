@@ -10,16 +10,28 @@ export interface ProductColor {
   image_url?: string | null;
 }
 
+/** One choice within a variant group ("Rouge", "128 Go", "Menthe"). Carries its
+ *  own optional photo — selecting it swaps the product page's main image. */
+export interface VariantOption {
+  value_fr: string;
+  value_ar: string;
+  image_url: string | null;
+}
+
 export interface VariantGroup {
   name_fr: string;
   name_ar: string;
-  values: string[];
+  values: VariantOption[];
 }
 
+/** The shopper's selection, snapshotted into the order. `value` is kept only
+ *  for reading orders placed before the bilingual-option upgrade. */
 export interface VariantPick {
   name_fr: string;
   name_ar: string;
-  value: string;
+  value_fr: string;
+  value_ar: string;
+  value?: string;
 }
 
 export type QuantityOffer =
@@ -132,6 +144,39 @@ export interface ClientReview {
   image_url: string | null;
   active: boolean;
   created_at: string;
+}
+
+export interface AdminProfileRow {
+  user_id: string;
+  email: string | null;
+  is_owner: boolean;
+  sections: string[];
+  active: boolean;
+  created_at: string;
+}
+
+export interface PolicySettingsRow {
+  id: boolean;
+  title_fr: string | null;
+  title_ar: string | null;
+  intro_fr: string | null;
+  intro_ar: string | null;
+  updated_label_fr: string | null;
+  updated_label_ar: string | null;
+  updated_at: string;
+}
+
+export interface PolicySectionRow {
+  id: string;
+  builtin_key: string | null;
+  sort_order: number;
+  active: boolean;
+  title_fr: string | null;
+  title_ar: string | null;
+  body_fr: string | null;
+  body_ar: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface GuestOrderLookup {

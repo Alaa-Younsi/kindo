@@ -6,7 +6,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 
 export default [
-  { ignores: ["dist", "node_modules"] },
+  // supabase/functions is Deno-targeted (Deno global, https/esm.sh imports).
+  { ignores: ["dist", "node_modules", "supabase/functions"] },
   js.configs.recommended,
   {
     files: ["**/*.{ts,tsx}"],

@@ -1,0 +1,19 @@
+{
+  // Scopes this folder for the editor's TypeScript server so it stops checking
+  // Deno code against the Vite/browser config. NOT part of `bun run build`
+  // (the root tsconfig only references src/ + vite.config.ts). At runtime the
+  // Supabase Edge Runtime + `deno.json` are the source of truth; if you have
+  // the Deno VS Code extension it takes over from this file entirely.
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": [],
+    "strict": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": ["**/*.ts"]
+}

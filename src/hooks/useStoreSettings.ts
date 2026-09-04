@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import type { DeliveryType, StoreSettings } from "@/types/db";
 
@@ -26,6 +26,17 @@ export function useStoreSettings() {
       return (data as StoreSettings) ?? STORE_SETTINGS_FALLBACK;
     },
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useUpdateStoreSettings() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (patch: Partial<Pick<StoreSettings, "shipping_fee" | "free_ship_threshold">>) => {
+      const { error } = await supabase.from("store_settings").update(patch).eq("id", 1);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["store-settings"] }),
   });
 }
 

@@ -15,7 +15,8 @@ import { localize } from "@/lib/format";
 import { discountPercent } from "@/lib/offers";
 import { useCartStore } from "@/store/cart";
 import { trackAddToCart, trackViewContent } from "@/lib/pixel";
-import type { ProductColor } from "@/types/db";
+import { cn } from "@/lib/utils";
+import type { ProductColor, VariantOption } from "@/types/db";
 
 export default function ProductPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -29,6 +30,7 @@ export default function ProductPage() {
   const [size, setSize] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [variantPicks, setVariantPicks] = useState<Record<string, string>>({});
+  const [selErr, setSelErr] = useState(false);
 
   const trackedViewId = useRef<string | null>(null);
 
@@ -89,37 +91,64 @@ export default function ProductPage() {
   const lowStock = product.stock > 0 && product.stock <= 5;
 
   // Real product_images come first — images[0] stays what gets snapshotted
-  // into the cart/order, never a colour photo. Colour photos that don't
-  // already duplicate a base image are appended after.
+  // into the cart/order, never a colour/variant photo. Selection photos that
+  // don't already duplicate a base image are appended after.
   const galleryImages: GalleryImage[] = (() => {
     const base: GalleryImage[] = images.map((img) => ({ key: img.id, url: img.url, alt: img.alt }));
     const seen = new Set(base.map((g) => g.url));
-    const colorImages: GalleryImage[] = [];
-    for (const c of product.colors) {
-      if (!c.image_url || seen.has(c.image_url)) continue;
-      seen.add(c.image_url);
-      colorImages.push({ key: `color-${c.hex}-${c.label_fr}`, url: c.image_url, alt: localize(c, "label", lang) });
-    }
-    return [...base, ...colorImages];
+    const extra: GalleryImage[] = [];
+    const add = (url: string | null | undefined, key: string, alt: string) => {
+      if (!url || seen.has(url)) return;
+      seen.add(url);
+      extra.push({ key, url, alt });
+    };
+    for (const c of product.colors) add(c.image_url, `color-${c.hex}-${c.label_fr}`, localize(c, "label", lang));
+    for (const g of product.variants)
+      for (const o of g.values) add(o.image_url, `var-${g.name_fr}-${o.value_fr}`, o.value_fr);
+    return [...base, ...extra];
   })();
 
-  const handleColorSelect = (c: ProductColor) => {
-    const label = localize(c, "label", lang);
-    setColor(label);
-    if (!c.image_url) return;
-    const idx = galleryImages.findIndex((g) => g.url === c.image_url);
+  const swapToImage = (url: string | null | undefined) => {
+    if (!url) return;
+    const idx = galleryImages.findIndex((g) => g.url === url);
     if (idx >= 0) setActiveImage(idx);
+  };
+
+  const handleColorSelect = (c: ProductColor) => {
+    setColor(localize(c, "label", lang));
+    setSelErr(false);
+    swapToImage(c.image_url);
+  };
+
+  const handleVariantSelect = (groupName: string, opt: VariantOption) => {
+    setVariantPicks((prev) => ({ ...prev, [groupName]: opt.value_fr }));
+    setSelErr(false);
+    swapToImage(opt.image_url);
   };
 
   const selectedVariants = product.variants
     .filter((group) => variantPicks[group.name_fr])
-    .map((group) => ({
-      name_fr: group.name_fr,
-      name_ar: group.name_ar,
-      value: variantPicks[group.name_fr],
-    }));
+    .map((group) => {
+      const opt = group.values.find((o) => o.value_fr === variantPicks[group.name_fr]);
+      return {
+        name_fr: group.name_fr,
+        name_ar: group.name_ar,
+        value_fr: opt?.value_fr ?? variantPicks[group.name_fr],
+        value_ar: opt?.value_ar ?? variantPicks[group.name_fr],
+      };
+    });
+
+  // Every axis the product defines must be chosen before it can be ordered.
+  const needsColor = product.colors.length > 0 && !color;
+  const needsSize = product.sizes.length > 0 && !size;
+  const missingGroups = product.variants.filter((g) => !variantPicks[g.name_fr]);
+  const selectionComplete = !needsColor && !needsSize && missingGroups.length === 0;
 
   const handleAddToCart = () => {
+    if (!selectionComplete) {
+      setSelErr(true);
+      return;
+    }
     addItem(
       {
         productId: product.id,
@@ -199,8 +228,15 @@ export default function ProductPage() {
           )}
 
           {product.colors.length > 0 && (
-            <div className="mt-5">
-              <p className="mb-2 text-sm font-bold text-ink">{t("product.color")}</p>
+            <div
+              className={cn(
+                "mt-5 rounded-2xl p-3 transition-colors",
+                selErr && needsColor ? "bg-brand/5 ring-2 ring-brand" : "-mx-3",
+              )}
+            >
+              <p className="mb-2 text-sm font-bold text-ink">
+                {t("product.color")} <span className="text-brand">*</span>
+              </p>
               <div className="flex flex-wrap gap-3">
                 {product.colors.map((c) => {
                   const label = localize(c, "label", lang);
@@ -228,13 +264,23 @@ export default function ProductPage() {
           )}
 
           {product.sizes.length > 0 && (
-            <div className="mt-4">
-              <p className="mb-2 text-sm font-bold text-ink">{t("product.size")}</p>
+            <div
+              className={cn(
+                "mt-4 rounded-2xl p-3 transition-colors",
+                selErr && needsSize ? "bg-brand/5 ring-2 ring-brand" : "-mx-3",
+              )}
+            >
+              <p className="mb-2 text-sm font-bold text-ink">
+                {t("product.size")} <span className="text-brand">*</span>
+              </p>
               <div className="flex flex-wrap gap-2">
                 {product.sizes.map((s) => (
                   <button
                     key={s}
-                    onClick={() => setSize(s)}
+                    onClick={() => {
+                      setSize(s);
+                      setSelErr(false);
+                    }}
                     className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold ${size === s ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
                   >
                     {s}
@@ -244,24 +290,51 @@ export default function ProductPage() {
             </div>
           )}
 
-          {product.variants.map((group) => (
-            <div key={group.name_fr} className="mt-4">
-              <p className="mb-2 text-sm font-bold text-ink">
-                {lang === "ar" ? group.name_ar : group.name_fr}
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {group.values.map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => setVariantPicks((prev) => ({ ...prev, [group.name_fr]: val }))}
-                    className={`rounded-full border-2 px-3 py-1.5 text-sm font-bold ${variantPicks[group.name_fr] === val ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
-                  >
-                    {val}
-                  </button>
-                ))}
+          {product.variants.map((group) => {
+            const missing = selErr && !variantPicks[group.name_fr];
+            return (
+              <div
+                key={group.name_fr}
+                className={cn(
+                  "mt-4 rounded-2xl p-3 transition-colors",
+                  missing ? "bg-brand/5 ring-2 ring-brand" : "-mx-3",
+                )}
+              >
+                <p className="mb-2 text-sm font-bold text-ink">
+                  {lang === "ar" ? group.name_ar : group.name_fr}{" "}
+                  <span className="text-brand">*</span>
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {group.values.map((opt) => {
+                    const active = variantPicks[group.name_fr] === opt.value_fr;
+                    const label = (lang === "ar" ? opt.value_ar : opt.value_fr) || opt.value_fr;
+                    return (
+                      <button
+                        key={opt.value_fr}
+                        onClick={() => handleVariantSelect(group.name_fr, opt)}
+                        className={`flex items-center gap-2 rounded-full border-2 py-1.5 pe-3 text-sm font-bold ${
+                          opt.image_url ? "ps-1.5" : "ps-3"
+                        } ${active ? "border-brand bg-brand/10 text-brand" : "border-line text-ink"}`}
+                      >
+                        {opt.image_url && (
+                          <img
+                            src={opt.image_url}
+                            alt=""
+                            width={28}
+                            height={28}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-7 w-7 rounded-full object-cover"
+                          />
+                        )}
+                        {label}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
 
           {!isOut && (
             <div className="mt-5 flex items-center gap-3">
@@ -285,11 +358,16 @@ export default function ProductPage() {
           )}
 
           {!isOut && (
-            <div className="mt-6 flex gap-3">
-              <Button variant="blue" size="lg" onClick={handleAddToCart} className="fx-paw-sweep flex-1 gap-2 hover:-rotate-1">
-                <ShoppingBagIcon className="h-4 w-4" />
-                {t("product.addToCart")}
-              </Button>
+            <div className="mt-6">
+              {selErr && !selectionComplete && (
+                <p className="mb-2 text-sm font-bold text-brand">{t("product.selectOptions")}</p>
+              )}
+              <div className="flex gap-3">
+                <Button variant="blue" size="lg" onClick={handleAddToCart} className="fx-paw-sweep flex-1 gap-2 hover:-rotate-1">
+                  <ShoppingBagIcon className="h-4 w-4" />
+                  {t("product.addToCart")}
+                </Button>
+              </div>
             </div>
           )}
 
@@ -320,6 +398,8 @@ export default function ProductPage() {
                   size={size}
                   variants={selectedVariants}
                   quantity={quantity}
+                  selectionComplete={selectionComplete}
+                  onBlockedSubmit={() => setSelErr(true)}
                 />
               </div>
             </div>

@@ -6,7 +6,7 @@ import { Price } from "@/components/ui/Price";
 import { SmartImage } from "@/components/ui/SmartImage";
 import { useAdminToast } from "@/components/admin/AdminToast";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { formatDate } from "@/lib/format";
+import { formatDate, variantSummary } from "@/lib/format";
 import type { OrderStatus } from "@/types/db";
 
 export default function AdminOrderDetail() {
@@ -120,13 +120,7 @@ export default function AdminOrderDetail() {
                 </p>
                 {(item.color || item.size || item.variants.length > 0) && (
                   <p className="text-xs text-muted">
-                    {[
-                      item.color,
-                      item.size,
-                      ...item.variants.map(
-                        (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
-                      ),
-                    ]
+                    {[item.color, item.size, ...variantSummary(item.variants, lang)]
                       .filter(Boolean)
                       .join(" · ")}
                   </p>

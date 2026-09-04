@@ -34,6 +34,8 @@ src/
   types/        DB row types
 supabase/
   migrations/   sequential SQL migrations — run in order, never renumber
+  functions/    create-worker, set-worker-password — service-role edge
+                functions for staff account management (Deno; deploy separately)
 scripts/
   generate-sitemap.mjs   prebuild: writes public/sitemap.xml + public/robots.txt
   gen-og-image.ps1       one-off: regenerates public/og-image.png
@@ -132,6 +134,30 @@ Two independent halves keep the Supabase egress + Vercel Cached Egress bill flat
     check it deliberately.
 13. **`bun run optimize:assets`** after dropping any new image into `public/`
     (client logo, certificates, hero) so it never ships full-size.
+14. **Staff accounts (`0015_admin_content.sql`).** After it runs, only seeded
+    admins can write — every existing `auth.users` row is turned into an
+    *owner* by the seed, so no current admin is locked out; a self-registered
+    account gets no `admin_profiles` row and therefore no access. The owner
+    then adds employees from **/admin/team** and ticks the sections each one
+    may open (enforced by the `has_section()` RLS policies, not just the UI).
+15. **Deploy the two edge functions** — `supabase functions deploy
+    create-worker` and `supabase functions deploy set-worker-password`
+    (service-role key is injected automatically). Until they're deployed,
+    creating a worker or setting a worker's password fails in the UI as a
+    generic network error. Owners rotate their **own** password on
+    /admin/account (current password required); the owner sets a *worker's*
+    password on /admin/team (no old password — that's why the function
+    refuses to target another owner).
+16. **Tracking pixels are admin-managed** — add Meta and/or TikTok ids in
+    **/admin/pixels** (never a hardcoded id, no redeploy). `src/lib/tracking.ts`
+    installs each vendor's base snippet on demand, isolates events per pixel
+    (`trackSingle` / `ttq.instance`), guards a NaN/0 `value`, and no-ops
+    behind an ad blocker. Confirm in Meta Events Manager / TikTok Events that
+    each campaign's pixel receives only its own pages' events, and that
+    `/admin/*` fires nothing.
+17. **Policy page** — /policy renders from `translations.ts` by default; the
+    owner overrides any field (per language) in **/admin/policy**. An empty
+    box means "still the compiled text". The footer links to it.
 
 ## Deploying (Vercel + GitHub)
 

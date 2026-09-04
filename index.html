@@ -89,36 +89,9 @@
       }
     </script>
 
-    <!-- Meta Pixel — the id comes from VITE_META_PIXEL_ID (set it in the Vercel
-         project env). When it's unset the %VITE_META_PIXEL_ID% token is left
-         verbatim by Vite, and the guard below makes the whole snippet a no-op
-         so nothing loads and no junk "PageView" is filed. SPA route-change
-         PageViews are sent from src/App.tsx (PixelPageView). -->
-    <script>
-      (function () {
-        var PIXEL_ID = "%VITE_META_PIXEL_ID%";
-        if (!/^\d{10,20}$/.test(PIXEL_ID)) return;
-        !(function (f, b, e, v, n, t, s) {
-          if (f.fbq) return;
-          n = f.fbq = function () {
-            n.callMethod ? n.callMethod.apply(n, arguments) : n.queue.push(arguments);
-          };
-          if (!f._fbq) f._fbq = n;
-          n.push = n;
-          n.loaded = !0;
-          n.version = "2.0";
-          n.queue = [];
-          t = b.createElement(e);
-          t.async = !0;
-          t.src = v;
-          s = b.getElementsByTagName(e)[0];
-          s.parentNode.insertBefore(t, s);
-        })(window, document, "script", "https://connect.facebook.net/en_US/fbevents.js");
-        window.fbq("init", PIXEL_ID);
-        window.fbq("track", "PageView");
-        window.__KINDO_PIXEL_ID = PIXEL_ID;
-      })();
-    </script>
+    <!-- Meta + TikTok pixels are admin-managed and DB-driven — the owner enters
+         ids in /admin/pixels and src/lib/tracking.ts installs the base
+         snippets and fans events out per campaign. No hardcoded id here. -->
   </head>
   <body>
     <div id="root"></div>

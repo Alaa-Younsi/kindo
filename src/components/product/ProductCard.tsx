@@ -34,6 +34,10 @@ export function ProductCard({ product }: { product: Product }) {
   const discount = discountPercent(product.price, product.compare_at_price);
   const isOut = product.stock <= 0;
   const tone = HOVER_TONES[accentIndex(product.id)];
+  // A product with a colour / size / variant axis can't be one-click added —
+  // the choice is mandatory. The card is already a link to its page.
+  const needsChoice =
+    product.colors.length > 0 || product.sizes.length > 0 || product.variants.length > 0;
 
   const handleQuickAdd = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -98,7 +102,7 @@ export function ProductCard({ product }: { product: Product }) {
             )}
           </div>
 
-          {!isOut && (
+          {!isOut && !needsChoice && (
             <motion.button
               whileTap={{ scale: 0.8 }}
               onClick={handleQuickAdd}

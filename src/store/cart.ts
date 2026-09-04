@@ -40,7 +40,7 @@ interface CartState {
  *  so the same picks made in a different order merge into one cart line. */
 function variantsKey(variants: VariantPick[]): string {
   return variants
-    .map((v) => `${v.name_fr}:${v.value}`)
+    .map((v) => `${v.name_fr}:${v.value_fr || v.value || ""}`)
     .sort()
     .join("|");
 }

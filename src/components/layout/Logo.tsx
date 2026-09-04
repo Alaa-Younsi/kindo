@@ -1,19 +1,30 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
-export function Logo({ className }: { className?: string }) {
+const SIZES = {
+  // header: compact, scaled up via transform so it doesn't change the bar height
+  sm: "h-11 origin-left scale-[1.15] sm:h-12",
+  // admin sidebar / standalone: render at true size, no cramped transform
+  lg: "h-14 sm:h-16",
+} as const;
+
+export function Logo({
+  className,
+  size = "sm",
+}: {
+  className?: string;
+  size?: keyof typeof SIZES;
+}) {
   return (
     <Link to="/" className={cn("flex shrink-0 items-center", className)} aria-label="KINDO">
-      {/* The source is cropped to the mark (no empty margins), and scaled up
-          via transform so the visible logo grows without changing the
-          header's layout height. */}
+      {/* The source is cropped to the mark (no empty margins). */}
       <img
         src="/logo.png"
         alt="KINDO"
-        width={106}
-        height={48}
+        width={212}
+        height={96}
         fetchPriority="high"
-        className="h-11 w-auto origin-left scale-[1.15] object-contain sm:h-12"
+        className={cn("w-auto object-contain", SIZES[size])}
       />
     </Link>
   );

@@ -9,7 +9,8 @@ export const ADMIN_ORDERS_LIMIT = 300;
 export interface PlaceOrderVariantPick {
   name_fr: string;
   name_ar: string;
-  value: string;
+  value_fr: string;
+  value_ar: string;
 }
 
 export interface PlaceOrderItem {

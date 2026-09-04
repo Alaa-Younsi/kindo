@@ -19,6 +19,7 @@ import { usePlaceOrder } from "@/hooks/useOrders";
 import { useHoneypot } from "@/hooks/useHoneypot";
 import { checkoutSchema, type CheckoutFormValues } from "@/lib/checkoutSchema";
 import { lineTotal } from "@/lib/offers";
+import { variantSummary } from "@/lib/format";
 import { orderErrorKey } from "@/lib/orderErrors";
 import { trackInitiateCheckout, trackPurchase } from "@/lib/pixel";
 import { useSeo } from "@/hooks/useSeo";
@@ -185,12 +186,10 @@ export default function Checkout() {
           <h2 className="mb-4 font-display text-lg font-extrabold text-ink">{t("checkout.summary")}</h2>
           <ul className="divide-y-2 divide-line rounded-2xl border-2 border-line bg-panel">
             {items.map((line) => {
-              const variantLabels = line.variants.map(
-                (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
-              );
+              const variantLabels = variantSummary(line.variants, lang);
               return (
                 <li
-                  key={`${line.productId}-${line.color}-${line.size}-${line.variants.map((v) => v.value).join(",")}`}
+                  key={`${line.productId}-${line.color}-${line.size}-${line.variants.map((v) => v.value_fr ?? v.value).join(",")}`}
                   className="flex gap-3 p-4"
                 >
                   <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-panel-2">

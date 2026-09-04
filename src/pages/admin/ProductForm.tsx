@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { GripVertical, Trash2, Upload } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star, Trash2, Upload } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { useAdminProduct } from "@/hooks/useProducts";
 import { useCategories } from "@/hooks/useCategories";
@@ -105,6 +105,9 @@ export default function ProductForm() {
     }
   }, [existing]);
 
+  const priceNum = Number(form.price);
+  const priceValid = form.price.trim() !== "" && Number.isFinite(priceNum) && priceNum > 0;
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const payload = {
@@ -199,6 +202,28 @@ export default function ProductForm() {
       return;
     }
     setImages((prev) => prev.filter((img) => img.id !== imageId));
+  };
+
+  // The first image is the one snapshotted into every order and used as the
+  // shop-card thumbnail, so order matters — persist it via sort_order.
+  const moveImage = async (from: number, to: number) => {
+    if (to < 0 || to >= images.length) return;
+    const next = [...images];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setImages(next);
+    const results = await Promise.all(
+      next.map((img, i) =>
+        supabase.from("product_images").update({ sort_order: i }).eq("id", img.id),
+      ),
+    );
+    if (results.some((r) => r.error)) {
+      toast(t("admin.saveError"), "error");
+      setImages(images); // revert to the pre-move order
+    } else {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
+    }
   };
 
   // A failed load must BLOCK the form — never fall through to blank defaults,
@@ -344,6 +369,7 @@ export default function ProductForm() {
         <CustomVariantsEditor
           value={form.variants}
           onChange={(variants) => setForm({ ...form, variants })}
+          productId={isNew ? undefined : id}
         />
       </div>
 
@@ -357,9 +383,11 @@ export default function ProductForm() {
 
       {!isNew && (
         <div className="mt-6">
-          <p className="mb-2 text-sm font-bold text-ink">Images</p>
+          <p className="mb-2 text-sm font-bold text-ink">
+            {t("admin.products.imagesLabel")}
+          </p>
           <div className="flex flex-wrap gap-3">
-            {images.map((img) => (
+            {images.map((img, i) => (
               <div key={img.id} className="group relative h-24 w-24 overflow-hidden rounded-xl border-2 border-line">
                 <SmartImage
                   src={img.url}
@@ -369,13 +397,40 @@ export default function ProductForm() {
                   sizes="96px"
                   className="h-full w-full object-cover"
                 />
-                <button
-                  onClick={() => handleDeleteImage(img.id)}
-                  className="absolute inset-0 flex items-center justify-center bg-ink/50 text-white opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <Trash2 className="h-5 w-5" />
-                </button>
-                <GripVertical className="absolute bottom-1 end-1 h-3 w-3 text-white/70" />
+                {i === 0 && (
+                  <span className="absolute start-1 top-1 flex items-center gap-0.5 rounded bg-brand px-1 py-0.5 text-[9px] font-extrabold text-brand-ink">
+                    <Star className="h-2.5 w-2.5 fill-current" />
+                    {t("admin.products.primaryImage")}
+                  </span>
+                )}
+                <div className="absolute inset-x-0 bottom-0 flex justify-between bg-ink/50 opacity-0 transition-opacity group-hover:opacity-100">
+                  <button
+                    type="button"
+                    onClick={() => moveImage(i, i - 1)}
+                    disabled={i === 0}
+                    aria-label={t("admin.products.moveImageBack")}
+                    className="p-1 text-white disabled:opacity-30"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteImage(img.id)}
+                    aria-label={t("admin.delete")}
+                    className="p-1 text-white hover:text-brand"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveImage(i, i + 1)}
+                    disabled={i === images.length - 1}
+                    aria-label={t("admin.products.moveImageForward")}
+                    className="p-1 text-white disabled:opacity-30"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             ))}
             <label className="flex h-24 w-24 cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-line text-muted hover:border-blue hover:text-blue">
@@ -394,10 +449,13 @@ export default function ProductForm() {
         </div>
       )}
 
-      <div className="mt-8 flex gap-2">
+      {!priceValid && (
+        <p className="mt-6 text-sm font-bold text-brand">{t("admin.products.priceRequired")}</p>
+      )}
+      <div className="mt-4 flex gap-2">
         <Button
           variant="brand"
-          disabled={saveMutation.isPending}
+          disabled={saveMutation.isPending || !form.name_fr.trim() || !priceValid}
           onClick={() => saveMutation.mutate()}
         >
           {saveMutation.isPending ? t("admin.saving") : t("admin.save")}

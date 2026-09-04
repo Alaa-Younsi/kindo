@@ -4,10 +4,22 @@ export function cn(...classes: Array<string | false | null | undefined>): string
   return classes.filter(Boolean).join(" ");
 }
 
-/** A half-filled variant group the admin abandoned must not reach the
- *  storefront as a nameless/empty picker — filter before writing. */
+/** Drop half-filled groups (no name, or no usable option) and clean each
+ *  option — AR falls back to FR, image normalises to null — before writing. */
 export function sanitizeVariantGroups(groups: VariantGroup[]): VariantGroup[] {
-  return groups.filter((g) => g.name_fr.trim() && g.values.length > 0);
+  return groups
+    .map((g) => ({
+      name_fr: g.name_fr.trim(),
+      name_ar: g.name_ar.trim() || g.name_fr.trim(),
+      values: g.values
+        .filter((o) => o.value_fr.trim())
+        .map((o) => ({
+          value_fr: o.value_fr.trim(),
+          value_ar: o.value_ar.trim() || o.value_fr.trim(),
+          image_url: o.image_url || null,
+        })),
+    }))
+    .filter((g) => g.name_fr && g.values.length > 0);
 }
 
 /** Drop colour rows the admin never named, and normalize a missing hex —

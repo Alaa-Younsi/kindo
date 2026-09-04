@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/lib/supabase";
 import { sanitizeSearchTerm } from "@/lib/utils";
-import type { Product, ProductColor } from "@/types/db";
+import type { Product, ProductColor, VariantGroup, VariantOption } from "@/types/db";
 
 const PRODUCT_SELECT = "*, product_images(*), categories(*)";
 
@@ -15,13 +15,33 @@ function normalizeColors(colors: unknown): ProductColor[] {
   );
 }
 
+// Variant groups pre-dating the bilingual-option upgrade stored `values` as
+// plain strings — lift them into { value_fr, value_ar, image_url } so every
+// consumer can trust the object shape.
+function normalizeVariantGroups(groups: unknown): VariantGroup[] {
+  if (!Array.isArray(groups)) return [];
+  return groups.map((g) => {
+    const rawValues = Array.isArray(g?.values) ? g.values : [];
+    const values: VariantOption[] = rawValues.map((v: unknown) =>
+      typeof v === "string"
+        ? { value_fr: v, value_ar: v, image_url: null }
+        : {
+            value_fr: (v as VariantOption)?.value_fr ?? "",
+            value_ar: (v as VariantOption)?.value_ar ?? (v as VariantOption)?.value_fr ?? "",
+            image_url: (v as VariantOption)?.image_url ?? null,
+          },
+    );
+    return { name_fr: g?.name_fr ?? "", name_ar: g?.name_ar ?? g?.name_fr ?? "", values };
+  });
+}
+
 // A DB that hasn't run the variants/offers migration yet returns rows
 // without those columns — normalize once here so every consumer can trust
 // the arrays instead of crashing on `product.variants.map(...)`.
 function normalizeProduct(product: Product): Product {
   return {
     ...product,
-    variants: product.variants ?? [],
+    variants: normalizeVariantGroups(product.variants),
     quantity_offers: product.quantity_offers ?? [],
     colors: normalizeColors(product.colors),
   };

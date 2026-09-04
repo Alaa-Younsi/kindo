@@ -8,6 +8,7 @@ import { Paw } from "@/components/effects/PawScatter";
 import { Price } from "@/components/ui/Price";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useSeo } from "@/hooks/useSeo";
+import { variantSummary } from "@/lib/format";
 
 /* One-shot celebratory paw confetti — pops in with the page, stays put. */
 const CONFETTI = [
@@ -62,10 +63,9 @@ export default function OrderConfirmation() {
         <div className="mt-8 rounded-2xl border-2 border-line bg-panel p-6 text-start">
           <ul className="divide-y-2 divide-line">
             {order.items.map((item, i) => {
-              const variantLabels = item.variants.map(
-                (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
-              );
-              const specLine = [item.color, item.size, ...variantLabels].filter(Boolean).join(" · ");
+              const specLine = [item.color, item.size, ...variantSummary(item.variants, lang)]
+                .filter(Boolean)
+                .join(" · ");
               return (
                 <li key={i} className="flex justify-between gap-3 py-3">
                   <span className="text-sm font-bold text-ink">

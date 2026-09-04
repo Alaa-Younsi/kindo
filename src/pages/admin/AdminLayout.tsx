@@ -1,53 +1,39 @@
 import { Suspense, useEffect, useState } from "react";
 import { Link, Navigate, NavLink, Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeft,
-  LayoutDashboard,
-  ListTree,
-  LogOut,
-  Menu,
-  Moon,
-  Package,
-  Star,
-  Sun,
-  Truck,
-  X,
-} from "lucide-react";
+import { ArrowLeft, LogOut, Menu, Moon, ShieldAlert, Sun, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminProfile } from "@/hooks/useAdminProfile";
+import { ADMIN_SECTIONS, routeToSection, type AdminSection } from "@/lib/adminSections";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { useTheme } from "@/theme/ThemeProvider";
 import { Logo } from "@/components/layout/Logo";
 import { AdminToastProvider } from "@/components/admin/AdminToast";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { to: "/admin", key: "admin.nav.dashboard", Icon: LayoutDashboard, end: true },
-  { to: "/admin/products", key: "admin.nav.products", Icon: Package, end: false },
-  { to: "/admin/categories", key: "admin.nav.categories", Icon: ListTree, end: false },
-  { to: "/admin/orders", key: "admin.nav.orders", Icon: Truck, end: false },
-  { to: "/admin/delivery-prices", key: "admin.nav.delivery", Icon: Truck, end: false },
-  { to: "/admin/reviews", key: "admin.nav.reviews", Icon: Star, end: false },
-] as const;
-
-// MODULE scope, never inside AdminLayout's body — a component redefined every
-// render gets a new identity and React remounts the whole subtree, which on
-// a touch device swaps the button out mid-tap so the close never fires.
-function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
+// MODULE scope — a component redefined every render gets a new identity and
+// React remounts the whole drawer subtree, which swaps a button out mid-tap.
+function SidebarContent({
+  sections,
+  onNavigate,
+}: {
+  sections: AdminSection[];
+  onNavigate?: () => void;
+}) {
   const { t, dir } = useLanguage();
   const { signOut } = useAuth();
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="shrink-0 px-5 py-5">
-        <Logo />
+        <Logo size="lg" />
       </div>
       <nav className="min-h-0 flex-1 space-y-1 overflow-y-auto px-3">
-        {NAV_ITEMS.map(({ to, key, Icon, end }) => (
+        {sections.map(({ key, route, exact, labelKey, icon: Icon }) => (
           <NavLink
-            key={to}
-            to={to}
-            end={end}
+            key={key}
+            to={route}
+            end={exact}
             onClick={onNavigate}
             className={({ isActive }) =>
               cn(
@@ -57,7 +43,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
             }
           >
             <Icon className="h-4.5 w-4.5" />
-            {t(key)}
+            {t(labelKey)}
           </NavLink>
         ))}
       </nav>
@@ -114,19 +100,14 @@ function RouteFallback() {
 }
 
 export default function AdminLayout() {
-  const { isAuthenticated, loading } = useAuth();
-  const { dir } = useLanguage();
+  const { isAuthenticated, loading, signOut } = useAuth();
+  const { isOwner, isActive, hasSection, isLoading: profileLoading } = useAdminProfile();
+  const { t, dir } = useLanguage();
   const { pathname } = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Close the drawer on any route change (a redirect or the back button
-  // changes the route with no click).
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  useEffect(() => setMobileOpen(false), [pathname]);
 
-  // Close on Escape, and when the viewport crosses to lg (the drawer is
-  // lg:hidden, so a resize would otherwise strand it open with scroll locked).
   useEffect(() => {
     if (!mobileOpen) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMobileOpen(false);
@@ -140,10 +121,6 @@ export default function AdminLayout() {
     };
   }, [mobileOpen]);
 
-  // Scroll-lock with position:fixed (NOT overflow:hidden — iOS Safari still
-  // rubber-bands under a touch-drag with overflow:hidden, which drags the
-  // fixed drawer out of sync with screen coordinates and makes the close
-  // button un-tappable).
   useEffect(() => {
     if (!mobileOpen) return;
     const y = window.scrollY;
@@ -161,22 +138,57 @@ export default function AdminLayout() {
     };
   }, [mobileOpen]);
 
-  if (loading) {
+  // 1. Hold the loading screen while the profile is still resolving — the first
+  //    render has no profile yet and would bounce a legitimate worker.
+  if (loading || (isAuthenticated && profileLoading)) {
     return <div className="flex min-h-screen items-center justify-center text-muted">…</div>;
   }
 
+  // 2. No session.
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
+  }
+
+  // 3. Session but no active admin_profiles row (deactivated, or self-registered) —
+  //    a real "no access" screen with a way out, never an empty dashboard.
+  if (!isActive) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-panel-2 px-4 text-center">
+        <ShieldAlert className="h-12 w-12 text-brand" />
+        <h1 className="font-display text-xl font-extrabold text-ink">{t("admin.noAccess.title")}</h1>
+        <p className="max-w-sm text-sm text-muted">{t("admin.noAccess.body")}</p>
+        <button
+          onClick={() => signOut()}
+          className="rounded-full bg-brand px-5 py-2 text-sm font-bold text-brand-ink"
+        >
+          {t("admin.nav.logout")}
+        </button>
+      </div>
+    );
+  }
+
+  const canAccess = (s: AdminSection) =>
+    s.always || (s.ownerOnly ? isOwner : hasSection(s.key));
+  const visibleSections = ADMIN_SECTIONS.filter(canAccess);
+
+  // 5. Direct-URL guard — same predicate. The dashboard is always:true so the
+  //    redirect target is never itself forbidden (no loop).
+  const currentKey = routeToSection(pathname);
+  if (currentKey) {
+    const section = ADMIN_SECTIONS.find((s) => s.key === currentKey);
+    if (section && !canAccess(section)) {
+      return <Navigate to="/admin" replace />;
+    }
   }
 
   return (
     <div className="min-h-screen bg-panel-2">
       <aside className="fixed inset-y-0 start-0 hidden w-64 border-e-2 border-line bg-panel lg:block">
-        <SidebarContent />
+        <SidebarContent sections={visibleSections} />
       </aside>
 
       <div className="flex items-center justify-between border-b-2 border-line bg-panel px-4 py-3 lg:hidden">
-        <Logo />
+        <Logo size="lg" />
         <button
           onClick={() => setMobileOpen(true)}
           className="rounded-full p-2 text-ink hover:bg-panel-2"
@@ -213,7 +225,7 @@ export default function AdminLayout() {
                 </button>
               </div>
               <div className="min-h-0 flex-1">
-                <SidebarContent onNavigate={() => setMobileOpen(false)} />
+                <SidebarContent sections={visibleSections} onNavigate={() => setMobileOpen(false)} />
               </div>
             </motion.div>
           </>

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Header } from "@/components/layout/Header";
@@ -7,7 +7,7 @@ import { CartDrawer } from "@/components/layout/CartDrawer";
 import { ComingSoonBanner, ComingSoonPanel } from "@/components/layout/ComingSoon";
 import { ScrollProgress } from "@/components/effects/ScrollProgress";
 import { COMING_SOON } from "@/lib/comingSoon";
-import { trackPageView } from "@/lib/pixel";
+import { TrackingBridge } from "@/components/TrackingBridge";
 
 // Storefront pages are the customer-facing critical path — kept eager for
 // Landing (first paint) but code-split per route so /checkout and /product
@@ -17,6 +17,7 @@ const Shop = lazy(() => import("@/pages/Shop"));
 const ProductPage = lazy(() => import("@/pages/Product"));
 const Checkout = lazy(() => import("@/pages/Checkout"));
 const OrderConfirmation = lazy(() => import("@/pages/OrderConfirmation"));
+const PolicyPage = lazy(() => import("@/pages/Policy"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 // Admin dashboard: staff-only, never needed by a storefront customer —
@@ -31,27 +32,16 @@ const AdminOrders = lazy(() => import("@/pages/admin/Orders"));
 const AdminOrderDetail = lazy(() => import("@/pages/admin/OrderDetail"));
 const AdminDeliveryPrices = lazy(() => import("@/pages/admin/DeliveryPrices"));
 const AdminReviews = lazy(() => import("@/pages/admin/Reviews"));
+const AdminPixels = lazy(() => import("@/pages/admin/Pixels"));
+const AdminPolicy = lazy(() => import("@/pages/admin/Policy"));
+const AdminTeam = lazy(() => import("@/pages/admin/Team"));
+const AdminAccount = lazy(() => import("@/pages/admin/Account"));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
-  return null;
-}
-
-function PixelPageView() {
-  const { pathname } = useLocation();
-  const prevPathname = useRef<string | null>(null);
-
-  useEffect(() => {
-    if (prevPathname.current === pathname) return; // initial mount AND StrictMode's dev double-invoke
-    const isFirstRender = prevPathname.current === null;
-    prevPathname.current = pathname;
-    if (isFirstRender || pathname.startsWith("/admin")) return;
-    trackPageView();
-  }, [pathname]);
-
   return null;
 }
 
@@ -101,7 +91,7 @@ export default function App() {
   return (
     <ErrorBoundary variant="route">
       <ScrollToTop />
-      <PixelPageView />
+      <TrackingBridge />
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<StorefrontLayout><Landing /></StorefrontLayout>} />
@@ -115,6 +105,8 @@ export default function App() {
             }
           />
           <Route path="/checkout" element={<StorefrontRoute><Checkout /></StorefrontRoute>} />
+          {/* Legal page — reachable even while COMING_SOON. */}
+          <Route path="/policy" element={<StorefrontLayout><PolicyPage /></StorefrontLayout>} />
           <Route
             path="/order-confirmation/:orderNumber"
             element={
@@ -135,6 +127,10 @@ export default function App() {
             <Route path="orders/:id" element={<AdminOrderDetail />} />
             <Route path="delivery-prices" element={<AdminDeliveryPrices />} />
             <Route path="reviews" element={<AdminReviews />} />
+            <Route path="pixels" element={<AdminPixels />} />
+            <Route path="policy" element={<AdminPolicy />} />
+            <Route path="team" element={<AdminTeam />} />
+            <Route path="account" element={<AdminAccount />} />
           </Route>
 
           <Route path="*" element={<StorefrontLayout><NotFound /></StorefrontLayout>} />

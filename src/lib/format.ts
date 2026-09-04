@@ -1,4 +1,4 @@
-import type { Lang } from "@/types/db";
+import type { Lang, VariantPick } from "@/types/db";
 
 export function formatPrice(value: number): string {
   const rounded = Math.round(value);
@@ -25,4 +25,20 @@ export function localize<T extends Record<string, unknown>>(
   const key = `${field}_${lang}` as keyof T;
   const fallbackKey = `${field}_fr` as keyof T;
   return (obj[key] as string) ?? (obj[fallbackKey] as string) ?? "";
+}
+
+/** A snapshotted variant pick's group name, in the reader's language. */
+export function variantName(v: VariantPick, lang: Lang): string {
+  return (lang === "ar" ? v.name_ar : v.name_fr) || v.name_fr;
+}
+
+/** A snapshotted variant pick's value, tolerating orders placed before the
+ *  bilingual-option upgrade (which only stored `value`). */
+export function variantValue(v: VariantPick, lang: Lang): string {
+  return (lang === "ar" ? v.value_ar : v.value_fr) || v.value_fr || v.value || "";
+}
+
+/** "Taille: M · Couleur: Rouge" for a list of picks. */
+export function variantSummary(variants: VariantPick[], lang: Lang): string[] {
+  return variants.map((v) => `${variantName(v, lang)}: ${variantValue(v, lang)}`);
 }

@@ -8,6 +8,7 @@ import { CatMascot } from "@/components/effects/mascots";
 import { useCartStore } from "@/store/cart";
 import { useLanguage } from "@/i18n/LanguageProvider";
 import { lineTotal } from "@/lib/offers";
+import { variantSummary } from "@/lib/format";
 
 export function CartDrawer() {
   const { t, lang, dir } = useLanguage();
@@ -43,12 +44,10 @@ export function CartDrawer() {
         <div className="flex h-full flex-col">
           <ul className="flex-1 divide-y-2 divide-line overflow-y-auto px-5">
             {items.map((line) => {
-              const variantLabels = line.variants.map(
-                (v) => `${lang === "ar" ? v.name_ar : v.name_fr}: ${v.value}`,
-              );
+              const variantLabels = variantSummary(line.variants, lang);
               return (
                 <li
-                  key={`${line.productId}-${line.color}-${line.size}-${line.variants.map((v) => v.value).join(",")}`}
+                  key={`${line.productId}-${line.color}-${line.size}-${line.variants.map((v) => v.value_fr ?? v.value).join(",")}`}
                   className="flex gap-3 py-4"
                 >
                   <Link

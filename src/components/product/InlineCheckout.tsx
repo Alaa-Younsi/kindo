@@ -23,9 +23,21 @@ interface InlineCheckoutProps {
   size: string | null;
   variants: VariantPick[];
   quantity: number;
+  /** False until every colour / size / variant group on the product is chosen. */
+  selectionComplete: boolean;
+  /** Called when the customer tries to submit with selections still missing. */
+  onBlockedSubmit: () => void;
 }
 
-export function InlineCheckout({ product, color, size, variants, quantity }: InlineCheckoutProps) {
+export function InlineCheckout({
+  product,
+  color,
+  size,
+  variants,
+  quantity,
+  selectionComplete,
+  onBlockedSubmit,
+}: InlineCheckoutProps) {
   const { t, lang } = useLanguage();
   const navigate = useNavigate();
   const { data: deliveryPrices } = useDeliveryPrices();
@@ -73,6 +85,10 @@ export function InlineCheckout({ product, color, size, variants, quantity }: Inl
   const onSubmit = async (values: CheckoutFormValues) => {
     setSubmitError(null);
     if (isSpam(values.website)) return;
+    if (!selectionComplete) {
+      onBlockedSubmit();
+      return;
+    }
 
     try {
       const orderNumber = await placeOrder.mutateAsync({
@@ -175,6 +191,9 @@ export function InlineCheckout({ product, color, size, variants, quantity }: Inl
       </div>
 
       {submitError && <p className="text-sm font-bold text-brand">{t(submitError)}</p>}
+      {!selectionComplete && (
+        <p className="text-sm font-bold text-brand">{t("product.selectOptions")}</p>
+      )}
 
       <Button type="submit" variant="brand" size="lg" disabled={isSubmitting} className="w-full">
         {isSubmitting ? t("checkout.submitting") : t("product.buyNow")}
