@@ -1,185 +1,204 @@
+<div align="center">
+
+<img src="public/logo.png" alt="KINDO logo" width="180" />
+
 # KINDO — Animalerie en ligne
 
-Cash-on-delivery e-commerce store for pet products (dogs, cats, birds, fish)
-in Algeria, with a FR/AR (RTL) storefront, per-wilaya delivery pricing, and
-a full admin dashboard. Bun + Vite + React + TypeScript + Supabase.
+**A bilingual (French / Arabic) cash-on-delivery pet store for Algeria, with a full custom admin dashboard.**
 
-## Stack
+[kindodz.com](https://www.kindodz.com)
 
-- Vite + React 19 + TypeScript (strict)
-- Tailwind CSS v4 (CSS-first `@theme`, `data-theme` light/dark tokens)
-- React Router, TanStack Query, Zustand (cart), react-hook-form + zod
-- Supabase (Postgres + Auth + Storage)
-- Vercel (hosting + Edge Middleware for social link previews)
+![React](https://img.shields.io/badge/React_19-20232A?logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_v4-06B6D4?logo=tailwindcss&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?logo=vercel&logoColor=white)
+![License](https://img.shields.io/badge/license-All_Rights_Reserved-red)
 
-## Local setup
+</div>
 
-```bash
-bun install
-cp .env.example .env   # fill in Supabase URL/anon key once the project exists
-bun run dev
-```
+---
+
+## Overview
+
+KINDO is a production e-commerce platform for pet food, accessories and care
+products (dogs, cats, birds and fish), built for the Algerian market. Customers
+browse and order in French or Arabic without creating an account, pay in cash on
+delivery, and get delivery prices that the store sets for each of the 69 wilayas.
+
+The store owner runs the business from a custom admin dashboard. From there they
+manage the catalogue, categories, orders, delivery prices, reviews, marketing
+pixels, policy pages and staff accounts, and none of it needs a developer or a
+redeploy.
+
+## Screenshots
+
+### Desktop
+
+| Home | Shop |
+| :---: | :---: |
+| <img src="docs/screenshots/desktop-home.webp" alt="KINDO home page on desktop" /> | <img src="docs/screenshots/desktop-shop.webp" alt="KINDO shop page on desktop" /> |
+| **Product & one-page checkout** | **Arabic (RTL) · dark mode** |
+| <img src="docs/screenshots/desktop-product.webp" alt="KINDO product page on desktop" /> | <img src="docs/screenshots/desktop-home-ar-dark.webp" alt="KINDO home page in Arabic, dark mode, on desktop" /> |
+
+### Mobile
+
+| Home | Shop | Product | Arabic · dark |
+| :---: | :---: | :---: | :---: |
+| <img src="docs/screenshots/mobile-home.webp" alt="KINDO home page on mobile" width="200" /> | <img src="docs/screenshots/mobile-shop.webp" alt="KINDO shop page on mobile" width="200" /> | <img src="docs/screenshots/mobile-product.webp" alt="KINDO product page on mobile" width="200" /> | <img src="docs/screenshots/mobile-home-ar-dark.webp" alt="KINDO home page in Arabic, dark mode, on mobile" width="200" /> |
+
+## Design concept
+
+The visual identity comes straight from the KINDO logo. Its four colours
+(**red, blue, green and yellow**) each stand for one of the store's animal
+families. The design follows three ideas:
+
+- **Playful, but made for buying.** Paw-print scatters, cats that wander across
+  the page, a flip card in the hero, tilt-on-hover cards, wave dividers and a
+  scrolling marquee give the store a warm, friendly feel. The product and
+  checkout pages stay clean and distraction-free so buying is quick.
+- **Mobile first.** Most customers arrive from social media on a phone. Every
+  screen is designed for one-handed use first: a slide-in cart drawer, sticky
+  actions, and an **inline checkout on the product page** so a visitor can order
+  without leaving it.
+- **Truly bilingual.** French and Arabic are both first-class languages. In
+  Arabic the whole layout mirrors to right-to-left, not just the text. Light and
+  dark themes come from one token system, and the saved theme and language are
+  applied before the first paint, so returning visitors never see a flash.
+
+## Features
+
+**Storefront**
+- French / Arabic interface with full RTL layout, plus light and dark themes
+- Catalogue organised as a category tree, with search and filters
+- Product variants (colour and custom options) with their own price and stock, and quantity offers
+- Cart drawer and one-page checkout; orders are cash on delivery with no customer account needed
+- Delivery prices for each of the 69 wilayas, with a choice of home or stop-desk delivery
+- Customer reviews, and a policy page the owner can edit
+
+**Admin dashboard**
+- Sales and order statistics, order management, and Excel export
+- Products, categories, variants, offers, images and product video
+- Delivery prices for each wilaya, turned on or off per wilaya
+- Meta and TikTok pixels managed from the dashboard, several per store, with events kept separate per pixel
+- Staff accounts with permissions for each section of the dashboard, enforced in the database
+- Owner account settings and password management
+
+## Tech stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | React 19, TypeScript (strict), Vite |
+| Styling | Tailwind CSS v4 (CSS-first `@theme`, design tokens for each theme), Framer Motion |
+| State & data | TanStack Query, Zustand (cart), React Router |
+| Forms | react-hook-form + zod |
+| Backend | Supabase: PostgreSQL, Auth, Storage, Row Level Security, Edge Functions |
+| Hosting | Vercel, with Edge Middleware for social link previews |
+| Tooling | Bun, ESLint, sharp (asset pipeline) |
+
+## Security
+
+- **Prices are calculated on the server.** Orders go through a single Postgres
+  function, `place_order`, which recalculates every price, offer, variant and
+  delivery fee from the database. Nothing the browser sends about price is
+  trusted.
+- **Stock can't be oversold.** Stock rows are locked while an order is placed,
+  and cancelling an order returns its stock automatically.
+- **Abuse protection.** The server limits how many orders one phone number can
+  place, and a store-wide circuit breaker stops sudden bursts of orders. It also
+  checks every field and caps cart sizes. Order numbers can't be guessed, and
+  forms include a honeypot and a minimum time-to-submit to stop bots.
+- **Row Level Security everywhere.** Customers can only read public data.
+  Dashboard access is checked for each section by a database function
+  (`has_section()`), not only in the interface. Anyone who signs up on their own
+  gets no access at all.
+- **Privileged actions run on the server.** Creating staff accounts and setting
+  their passwords happens in Supabase Edge Functions. The service-role key is
+  never sent to the browser.
+- **Hardened HTTP headers.** A strict Content-Security-Policy, HSTS with
+  preload, `X-Frame-Options`, `nosniff`, `Referrer-Policy` and a restrictive
+  `Permissions-Policy`.
+- **Upload limits.** Storage buckets only accept allowed file types up to a set
+  size.
+
+## Performance
+
+- Every page except the home page is loaded on demand, so the first download
+  stays small.
+- The main hero image and the logo are preloaded, and the Supabase connection is
+  opened early.
+- Uploaded images are shrunk and converted to WebP in the browser before
+  upload. `SmartImage` then asks Supabase for a version sized to each screen
+  (`srcset`) and lazy-loads everything below the fold.
+- Images committed to the repo go through a sharp pipeline
+  (`bun run optimize:assets`).
+- Built assets are cached for a year as immutable files, and static images use
+  `stale-while-revalidate`.
+- Store data is cached with TanStack Query, and animations turn off when the
+  visitor has asked for reduced motion.
+
+## SEO
+
+- Each page sets its own title, description and canonical URL.
+- Open Graph and Twitter cards, with French and Arabic locales.
+- Structured data (JSON-LD): `Store` for the site and `Product` + `Offer` on
+  each product page.
+- **Link previews for each product.** A Vercel Edge Middleware detects the bots
+  used by Facebook, WhatsApp, Telegram, X and others, and serves them each
+  product's own title, image and price. This single-page app would otherwise
+  show one generic preview for every link.
+- `sitemap.xml` and `robots.txt` are generated from the live catalogue on every
+  build.
+- Local search tags (`geo.region` DZ), plus semantic HTML with alt text on
+  images.
 
 ## Project structure
 
 ```
 src/
-  components/   layout (Header/Footer/CartDrawer), product, ui primitives, effects
-  hooks/        data hooks (React Query) + cross-cutting hooks
-  i18n/         FR/AR translations + RTL-aware LanguageProvider
-  lib/          supabase client, formatting, order-error mapping, pixel, image compression
-  pages/        storefront pages + pages/admin (dashboard)
+  components/   layout, product, shop, ui primitives, visual effects, admin editors
+  hooks/        data hooks (TanStack Query) and shared hooks
+  i18n/         FR/AR translations and the RTL-aware language provider
+  lib/          Supabase client, pricing/offers, tracking, image processing, SEO helpers
+  pages/        storefront pages and pages/admin (dashboard)
   store/        Zustand cart store
-  theme/        light/dark ThemeProvider
-  types/        DB row types
+  theme/        light/dark theme provider
 supabase/
-  migrations/   sequential SQL migrations — run in order, never renumber
-  functions/    create-worker, set-worker-password — service-role edge
-                functions for staff account management (Deno; deploy separately)
-scripts/
-  generate-sitemap.mjs   prebuild: writes public/sitemap.xml + public/robots.txt
-  gen-og-image.ps1       one-off: regenerates public/og-image.png
-  optimize-assets.mjs    one-off: compresses static images in public/ (see below)
-middleware.ts   Vercel Edge — serves real OG tags to social-share crawlers on /product/:slug
-vercel.json     SPA rewrite + CSP + security headers + asset caching
+  migrations/   schema, RLS policies, RPCs, triggers and seed data (run in order)
+  functions/    staff-management Edge Functions (Deno)
+scripts/        sitemap generation and asset optimisation
+middleware.ts   Vercel Edge link-preview middleware
+vercel.json     rewrites, security headers and caching rules
 ```
 
-## Images & egress
-
-Two independent halves keep the Supabase egress + Vercel Cached Egress bill flat:
-
-- **Uploaded** product/category/review images — `compressImage()`
-  (`src/lib/image.ts`) downscales + re-encodes to WebP *before* upload, and
-  `<SmartImage>` requests a size-appropriate variant from Supabase's on-the-fly
-  render endpoint (`responsiveSrcSet`), falling back to the original object URL
-  if that endpoint is ever disabled. Every `<img>` on a Supabase URL goes
-  through `SmartImage` (or a hand-written `srcSet`).
-- **Committed** `public/` assets (logo, favicon, OG image, hero, certificates,
-  seed photos) — `bun run optimize:assets` (idempotent; run after adding any).
-  `vercel.json` gives `/images/*` and the icon set a 1-week
-  `stale-while-revalidate` cache so returning visitors don't re-download them.
-
-## Go-live checklist
-
-1. **Create the Supabase project** → Project Settings → API → copy the URL
-   and anon key into `.env` (never commit real keys).
-2. **Run all SQL migrations in order** (every file in
-   `supabase/migrations/`, `0001` → the highest-numbered one — never stop
-   early) via the Supabase SQL editor or the CLI. This creates the schema,
-   RLS policies, the `place_order`/`get_order_by_number` RPCs, the restock
-   trigger, seed categories, seed delivery prices for all 69 wilayas (the 58
-   original + the 11 added in the April 2026 reorganization), quantity
-   offers / custom variants, the `product-images`/`product-videos`
-   storage buckets, and (`0014`) the concurrency lock + circuit breaker in
-   `place_order`, non-enumerable order numbers, the `get_admin_order_stats`
-   aggregate, and storage size/mime limits. Skipping the later migrations
-   launches the store with only 58 wilayas, no offers/variants, and the
-   pre-hardening `place_order`.
-3. **Create the admin user** in Supabase Auth (Authentication → Users →
-   Add user, email/password). Nothing in `/admin` can be live-tested
-   without this.
-4. **Disable public sign-up** in Authentication → Settings. This is the
-   actual thing standing between "only the admin has write access" and
-   "anyone who finds the anon key can self-register into full admin
-   access" — the `authenticated` RLS policies in `0002_rls.sql` grant full
-   store-owner access to any authenticated session, there is no separate
-   admin-role table in this scaffold.
-5. **Seed real product photos, delivery prices per wilaya, and reviews**
-   via the admin UI (`/admin`) — not manual SQL — to prove the CRUD forms
-   work end-to-end.
-6. **Confirm free shipping with the client.** Ships OFF by default
-   (`store_settings.free_ship_threshold` is `NULL`). If wanted, set the
-   number via SQL or a future admin field — the `place_order` RPC and both
-   checkout UIs already key off it through `resolveShipping()`.
-7. **Set environment variables in the Vercel project** (not just local
-   `.env`): `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `VITE_SITE_URL`.
-   The link-preview Edge middleware reads the first two at the edge and
-   silently falls back to the generic OG card without them. After deploy:
-   ```bash
-   curl -A "facebookexternalhit/1.1" https://<domain>/product/<slug>
-   ```
-   should return that product's own `og:title`/`og:image`.
-8. **Videos**: Supabase Storage is fine for a couple of short compressed
-   videos at modest traffic. Once real ad spend starts, move to
-   Cloudinary/Bunny via the plain "paste a video URL" field already in the
-   product form (no code change) — Supabase's free egress (~5 GB/month) is
-   shared with every image and API call.
-9. **Place at least one real test order end-to-end** through the actual
-   browser (both the cart `Checkout` and a product page's `InlineCheckout`)
-   as an anonymous customer — not logged into `/admin` — and confirm the
-   order confirmation page shows the full recap. Label the test customer
-   name `TEST` and delete it from the admin afterwards. Then fuzz
-   `place_order` directly (`POST {url}/rest/v1/rpc/place_order` with
-   `apikey`/`Authorization: Bearer <anon key>`): empty `items`, quantity
-   0/negative/10000, a disabled wilaya, an invented wilaya string, an
-   unknown product id, quantity greater than stock, a junk phone number, an
-   empty name, and a 4th rapid order from the same phone — each should
-   return a distinct `ERR_*`-prefixed error, never a 200 or a raw Postgres
-   stack trace. Cancel one test order in the admin and confirm the
-   product's stock goes back up (the restock trigger).
-10. **Set `VITE_META_PIXEL_ID`** in the Vercel project env (the 15–16 digit
-    id from Events Manager). The `index.html` snippet is guarded — with the
-    var unset the pixel never loads and files no junk `PageView`. The
-    SPA-aware event wiring (`PageView` on route change, `ViewContent`,
-    `AddToCart`, `InitiateCheckout`, `Purchase`) is already implemented in
-    `src/lib/pixel.ts` and `src/App.tsx` — only the id needs to be set.
-11. **robots.txt / sitemap.xml** regenerate automatically on every
-    `bun run build` (the `prebuild` script), sourced from `VITE_SITE_URL`
-    and the live `products` table — don't hand-edit them.
-12. **Verify the CSP on a deploy preview**, not locally — `Content-Security-
-    Policy` in `vercel.json` is inert under `bun run dev`. Open the preview
-    URL with the console open and walk a product page (Storage images +
-    video), a checkout (the `place_order` POST) and the admin image upload
-    (blob URLs); a blocked realtime socket shows only as stale data, so
-    check it deliberately.
-13. **`bun run optimize:assets`** after dropping any new image into `public/`
-    (client logo, certificates, hero) so it never ships full-size.
-14. **Staff accounts (`0015_admin_content.sql`).** After it runs, only seeded
-    admins can write — every existing `auth.users` row is turned into an
-    *owner* by the seed, so no current admin is locked out; a self-registered
-    account gets no `admin_profiles` row and therefore no access. The owner
-    then adds employees from **/admin/team** and ticks the sections each one
-    may open (enforced by the `has_section()` RLS policies, not just the UI).
-15. **Deploy the two edge functions** — `supabase functions deploy
-    create-worker` and `supabase functions deploy set-worker-password`
-    (service-role key is injected automatically). Until they're deployed,
-    creating a worker or setting a worker's password fails in the UI as a
-    generic network error. Owners rotate their **own** password on
-    /admin/account (current password required); the owner sets a *worker's*
-    password on /admin/team (no old password — that's why the function
-    refuses to target another owner).
-16. **Tracking pixels are admin-managed** — add Meta and/or TikTok ids in
-    **/admin/pixels** (never a hardcoded id, no redeploy). `src/lib/tracking.ts`
-    installs each vendor's base snippet on demand, isolates events per pixel
-    (`trackSingle` / `ttq.instance`), guards a NaN/0 `value`, and no-ops
-    behind an ad blocker. Confirm in Meta Events Manager / TikTok Events that
-    each campaign's pixel receives only its own pages' events, and that
-    `/admin/*` fires nothing.
-17. **Policy page** — /policy renders from `translations.ts` by default; the
-    owner overrides any field (per language) in **/admin/policy**. An empty
-    box means "still the compiled text". The footer links to it.
-
-## Deploying (Vercel + GitHub)
+## Development
 
 ```bash
-git init
-git add .
-git commit -m "Initial commit"
-gh repo create kindo --private --source=. --push   # or push to an existing remote
+bun install
+cp .env.example .env   # add the Supabase URL + anon key and the site URL
+bun run dev
 ```
 
-Then in Vercel: **Import Project** from the GitHub repo, framework preset
-"Vite", and set the three `VITE_*` environment variables from `.env.example`
-before the first deploy (step 7 above). `vercel.json` already handles the
-SPA rewrite, security headers, and asset caching.
+| Command | Purpose |
+| --- | --- |
+| `bun run dev` | Start the development server |
+| `bun run build` | Type-check, regenerate the sitemap, then build for production |
+| `bun run typecheck` | Run the TypeScript compiler in check mode |
+| `bun run lint` | Run ESLint with zero warnings allowed |
+| `bun run preview` | Serve the production build locally |
 
-## Scripts
+Environment setup, database migrations and the go-live checklist are in
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
-| Command             | Purpose                                      |
-| -------------------- | --------------------------------------------- |
-| `bun run dev`        | Start the Vite dev server                     |
-| `bun run build`      | Typecheck, regenerate sitemap, production build |
-| `bun run typecheck`  | `tsc --noEmit`                                |
-| `bun run lint`       | ESLint, zero warnings                         |
-| `bun run preview`    | Preview the production build locally          |
-| `bun run optimize:assets` | Compress static images in `public/` (idempotent) |
+## Author
+
+Designed and developed by **Alaa Younsi**.
+
+## License
+
+**Copyright © 2026 Alaa Younsi. All rights reserved.**
+
+This is proprietary software. You may not copy, modify, distribute or reuse any
+part of it (source code, design, assets or content) in any form without prior
+written permission. See [LICENSE](LICENSE) for the full terms.
