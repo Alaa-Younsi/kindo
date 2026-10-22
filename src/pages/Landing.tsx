@@ -278,7 +278,7 @@ export default function Landing() {
                         {photo ? (
                           <span
                             className={cn(
-                              "h-20 w-20 overflow-hidden rounded-full ring-4 transition-all sm:h-24 sm:w-24",
+                              "h-20 w-20 overflow-hidden rounded-2xl ring-4 transition-all sm:h-24 sm:w-24",
                               RING_TONES[i % RING_TONES.length],
                             )}
                           >
@@ -295,7 +295,7 @@ export default function Landing() {
                         ) : (
                           <span
                             className={cn(
-                              "flex h-20 w-20 items-center justify-center rounded-full transition-transform group-hover:rotate-12 sm:h-24 sm:w-24",
+                              "flex h-20 w-20 items-center justify-center rounded-2xl transition-transform group-hover:rotate-12 sm:h-24 sm:w-24",
                               BLOB_TONES[i % BLOB_TONES.length],
                             )}
                           >

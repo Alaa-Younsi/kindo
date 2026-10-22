@@ -110,7 +110,7 @@ export function Footer() {
             <ul className="flex flex-col gap-2 text-sm text-muted">
               <li>
                 <a
-                  href="https://wa.me/213542360763"
+                  href="https://wa.me/213560785536"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="group flex items-center gap-2 font-semibold text-ink transition-colors hover:text-green"
@@ -118,7 +118,7 @@ export function Footer() {
                   <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green text-white shadow-[0_2px_0_0_rgb(var(--c-ink)/0.15)] transition-transform group-hover:-translate-y-0.5 group-hover:-rotate-6">
                     <WhatsAppIcon className="h-4 w-4" />
                   </span>
-                  <span dir="ltr">+213 542 36 07 63</span>
+                  <span dir="ltr">+213 560 78 55 36</span>
                 </a>
               </li>
               <li className="flex items-center gap-2">

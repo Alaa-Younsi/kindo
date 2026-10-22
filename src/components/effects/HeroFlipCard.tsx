@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useMediaFlags } from "@/hooks/useMediaFlags";
 import { useLanguage } from "@/i18n/LanguageProvider";
-import { DogMascot, BirdMascot, CatMascot } from "./mascots";
+import { BirdMascot, CatMascot } from "./mascots";
 import { Paw } from "./PawScatter";
 
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
@@ -150,7 +150,7 @@ export function HeroFlipCard({ src, alt }: { src: string; alt: string }) {
             <Paw className="absolute -bottom-6 -end-6 h-40 w-40 rotate-[-18deg] text-white/10" />
             <motion.div style={{ scale: backScale, opacity: backOpacity }}>
               <div className="anim-float">
-                <DogMascot className="h-40 w-40 drop-shadow-2xl sm:h-52 sm:w-52" />
+                <img src="/images/hero-logo.svg" alt="Kindo" width={361} height={142} draggable={false} className="w-56 drop-shadow-2xl sm:w-72" />
               </div>
             </motion.div>
             <motion.p
