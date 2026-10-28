@@ -5,7 +5,7 @@ import { Paw } from "@/components/effects/PawScatter";
 import { WaveDivider } from "@/components/effects/WaveDivider";
 import { useLanguage } from "@/i18n/LanguageProvider";
 
-// lucide-react dropped brand/logo glyphs — hand-drawn paths for the two
+// lucide-react dropped brand/logo glyphs — hand-drawn paths for the
 // social icons, the one case the icon library genuinely has no shape for.
 function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -21,6 +21,14 @@ function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
       <rect x="2.5" y="2.5" width="19" height="19" rx="5" />
       <circle cx="12" cy="12" r="4.2" />
       <circle cx="17.4" cy="6.6" r="1.1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function TikTokIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path d="M16.6 5.82A4.28 4.28 0 0 1 15.54 3h-3.09v12.4a2.59 2.59 0 0 1-2.59 2.5 2.6 2.6 0 0 1-2.6-2.6 2.6 2.6 0 0 1 3.37-2.48V9.66a5.73 5.73 0 0 0-.77-.05 5.66 5.66 0 0 0-5.66 5.66A5.66 5.66 0 0 0 9.86 21a5.66 5.66 0 0 0 5.66-5.66V9.01a7.35 7.35 0 0 0 4.3 1.38V7.3a4.3 4.3 0 0 1-3.22-1.48Z" />
     </svg>
   );
 }
@@ -58,7 +66,7 @@ export function Footer() {
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">{t("footer.about")}</p>
             <div className="mt-4 flex gap-3">
               <a
-                href="https://facebook.com"
+                href="https://www.facebook.com/profile.php?id=100063728603776"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -67,13 +75,22 @@ export function Footer() {
                 <FacebookIcon className="h-4.5 w-4.5" />
               </a>
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/kindoalgerie"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="flex h-10 w-10 items-center justify-center rounded-full bg-brand text-brand-ink shadow-[0_3px_0_0_rgb(var(--c-ink)/0.15)] transition-transform hover:-translate-y-1 hover:-rotate-6"
               >
                 <InstagramIcon className="h-4.5 w-4.5" />
+              </a>
+              <a
+                href="https://www.tiktok.com/@kindoalgerie"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="TikTok"
+                className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-panel shadow-[0_3px_0_0_rgb(var(--c-ink)/0.15)] transition-transform hover:-translate-y-1 hover:rotate-6"
+              >
+                <TikTokIcon className="h-4.5 w-4.5" />
               </a>
             </div>
           </div>

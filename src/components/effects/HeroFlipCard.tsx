@@ -150,7 +150,14 @@ export function HeroFlipCard({ src, alt }: { src: string; alt: string }) {
             <Paw className="absolute -bottom-6 -end-6 h-40 w-40 rotate-[-18deg] text-white/10" />
             <motion.div style={{ scale: backScale, opacity: backOpacity }}>
               <div className="anim-float">
-                <img src="/images/hero-logo.svg" alt="Kindo" width={361} height={142} draggable={false} className="w-56 drop-shadow-2xl sm:w-72" />
+                <img
+                  src="/images/hero-logo-3d.webp"
+                  alt="Kindo"
+                  width={913}
+                  height={584}
+                  draggable={false}
+                  className="anim-sway-3d w-60 drop-shadow-[0_24px_30px_rgba(0,0,0,0.35)] sm:w-80"
+                />
               </div>
             </motion.div>
             <motion.p

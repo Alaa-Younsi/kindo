@@ -154,6 +154,11 @@ input[type="number"]::-webkit-inner-spin-button {
   0%, 100% { transform: translateY(0) rotate(var(--float-tilt, 0deg)); }
   50% { transform: translateY(-12px) rotate(var(--float-tilt, 0deg)); }
 }
+/* slow perspective sway — makes a flat render read as a physical 3D object */
+@keyframes kf-sway-3d {
+  0%, 100% { transform: perspective(900px) rotateX(8deg) rotateY(-16deg); }
+  50% { transform: perspective(900px) rotateX(4deg) rotateY(16deg); }
+}
 @keyframes kf-wiggle {
   0%, 100% { transform: rotate(-4deg); }
   50% { transform: rotate(4deg); }
@@ -223,6 +228,7 @@ input[type="number"]::-webkit-inner-spin-button {
 .anim-tilt3d { animation: kf-tilt3d 7s ease-in-out infinite; transform-style: preserve-3d; }
 
 .anim-float { animation: kf-float 5s ease-in-out infinite; }
+.anim-sway-3d { animation: kf-sway-3d 7s ease-in-out infinite; }
 .anim-wiggle { animation: kf-wiggle 2.4s ease-in-out infinite; }
 .anim-bounce-soft { animation: kf-bounce-soft 2.8s ease-in-out infinite; }
 .anim-spin-slow { animation: kf-spin-slow 26s linear infinite; }

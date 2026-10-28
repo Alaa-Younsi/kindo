@@ -1,12 +1,13 @@
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
+// `box` keeps the layout height the surrounding bars were built around;
+// `img` is the visible mark inside it.
 const SIZES = {
-  // header: compact, scaled up via transform so it doesn't change the bar height
-  // (desktop: 48px × 1.45 ≈ 70px fits the 72px bar; me-12 reserves the extra width)
-  sm: "h-11 origin-left scale-[1.15] rtl:origin-right sm:h-12 lg:me-12 lg:scale-[1.45]",
-  // admin sidebar / standalone: render at true size, no cramped transform
-  lg: "h-20 sm:h-24",
+  // header: the 44/48px box sets the bar height — the mark grows within it
+  sm: { box: "h-11 sm:h-12", img: "h-5 sm:h-6 lg:h-9" },
+  // admin sidebar / standalone
+  lg: { box: "h-20 sm:h-24", img: "h-8 sm:h-10" },
 } as const;
 
 export function Logo({
@@ -17,15 +18,15 @@ export function Logo({
   size?: keyof typeof SIZES;
 }) {
   return (
-    <Link to="/" className={cn("flex shrink-0 items-center", className)} aria-label="KINDO">
+    <Link to="/" className={cn("flex shrink-0 items-center", SIZES[size].box, className)} aria-label="KINDO">
       {/* The source is cropped to the mark (no empty margins). */}
       <img
         src="/logo.png"
         alt="KINDO"
-        width={212}
-        height={96}
+        width={469}
+        height={203}
         fetchPriority="high"
-        className={cn("w-auto object-contain", SIZES[size])}
+        className={cn("w-auto object-contain", SIZES[size].img)}
       />
     </Link>
   );
